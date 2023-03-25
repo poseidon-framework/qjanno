@@ -1,10 +1,7 @@
 module File where
 
-import qualified Codec.Compression.GZip as GZip
 import Control.Applicative ((<|>))
 import Control.Monad (guard, when)
-import qualified Data.ByteString.Lazy as ByteString
-import qualified Data.ByteString.Lazy.Char8 as Char8
 import Data.Char (isSpace)
 import System.Exit (exitFailure)
 import System.IO
@@ -13,10 +10,7 @@ import qualified Option as Option
 
 readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
 readFromFile opts handle = do
-  contents <- joinMultiLines <$> lines <$>
-    if Option.gzipped opts
-       then Char8.unpack <$> GZip.decompress <$> ByteString.hGetContents handle
-       else hGetContents handle
+  contents <- joinMultiLines <$> lines <$> hGetContents handle
   let (headLine : secondLine : _) = contents ++ [ "", "" ]
   let delimiter = guard (Option.tabDelimited opts) *> Just "\t" <|> Option.delimiter opts
   when (maybe False ((/=1) . length) delimiter) $ do

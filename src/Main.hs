@@ -3,7 +3,7 @@ module Main where
 import Control.Applicative
 import Control.Monad (forM_, guard, when)
 import Data.Char (isSpace)
-import Data.List (isSuffixOf, intercalate, transpose)
+import Data.List (intercalate, transpose)
 import qualified Data.Map as Map
 import Data.Maybe
 import qualified Data.Set as Set
@@ -87,8 +87,7 @@ readFilesCreateTables opts conn tableMap =
   forM_ (Map.toList tableMap) $ \(path, name) -> do
     let path' = unquote path
     handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
-    let opts' = opts { Option.gzipped = Option.gzipped opts || ".gz" `isSuffixOf` path' }
-    (columns, body) <- File.readFromFile opts' handle
+    (columns, body) <- File.readFromFile opts handle
     when (length columns == 0) $ do
       hPutStrLn stderr $ if Option.skipHeader opts
                             then "Header line is expected but missing in file " ++ path

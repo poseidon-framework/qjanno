@@ -13,7 +13,6 @@ data Option = Option { skipHeader :: Bool,
                        outputDelimiter :: Maybe String,
                        tabDelimitedOutput :: Bool,
                        keepLeadingWhiteSpace :: Bool,
-                       gzipped :: Bool,
                        queryFile :: Maybe String,
                        query :: Maybe String }
 
@@ -43,9 +42,6 @@ options = Option
   <*> switch (long "keep-leading-whitespace"
              <> short 'k'
              <> help "Keep leading whitespace in values. The leading whitespaces are stripped off by default.")
-  <*> switch (long "gzipped"
-             <> short 'z'
-             <> help "Assuming the gzipped input.")
   <*> optional (strOption (long "query-filename"
                           <> short 'q'
                           <> metavar "QUERY_FILENAME"

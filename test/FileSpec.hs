@@ -23,7 +23,6 @@ readFromFileSpec =
                         outputDelimiter = Nothing,
                         tabDelimitedOutput = False,
                         keepLeadingWhiteSpace = False,
-                        gzipped = False,
                         queryFile = Nothing,
                         query = Nothing }
 
@@ -31,12 +30,6 @@ readFromFileSpec =
       handle <- openFile "test/tests/basic.csv" ReadMode
       let expected = (["foo", "bar", "baz"], [["a0", "1", "a2"], ["b0", "3", "b2"], ["c0", "", "c2"]])
       readFromFile opts handle `shouldReturn` expected
-      hClose handle
-
-    it "should read from a gzipped file" $ do
-      handle <- openFile "test/tests/basic.csv.gz" ReadMode
-      let expected = (["foo", "bar", "baz"], [["a0", "1", "a2"], ["b0", "3", "b2"], ["c0", "", "c2"]])
-      readFromFile (opts { gzipped = True }) handle `shouldReturn` expected
       hClose handle
 
     it "should read from a test file which contains a multiline cell" $ do
