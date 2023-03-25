@@ -21,6 +21,7 @@ executable qhs
                       , File
                       , Option
                       , Paths_qhs
+                      , Janno
   build-depends:        base >= 4.9 && < 5
                       , bytestring
                       , containers
@@ -31,6 +32,8 @@ executable qhs
                       , sqlite-simple
                       , syb >= 0.4
                       , text
+                      , directory
+                      , filepath
 
 test-suite spec
   hs-source-dirs:       test,src

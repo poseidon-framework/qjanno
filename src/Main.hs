@@ -19,6 +19,7 @@ import qualified Option as Option
 import qualified Parser as Parser
 import qualified SQL as SQL
 import qualified SQLType as SQLType
+import qualified Janno as Janno
 
 main :: IO ()
 main = runCommand =<< execParser opts
@@ -86,19 +87,28 @@ readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameM
 readFilesCreateTables opts conn tableMap =
   forM_ (Map.toList tableMap) $ \(path, name) -> do
     let path' = unquote path
-    handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
-    (columns, body) <- File.readFromFile opts handle
-    when (length columns == 0) $ do
-      hPutStrLn stderr $ if Option.skipHeader opts
-                            then "Header line is expected but missing in file " ++ path
-                            else "Warning - data is empty"
-      exitFailure
-    when (any (elem ',') columns) $ do
-      hPutStrLn stderr "Column name cannot contain commas"
-      exitFailure
-    when (length columns >= 1) $
+    if path' == "jannos"
+    then do
+      allJannoPaths <- Janno.findAllJannoFiles "." -- needs a better mechanism to set the search path
+      let jannoOpts = opts {Option.skipHeader = True, Option.tabDelimited = True}
+      allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
+      allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
+      let (columns, body) = Janno.mergeJannos allJannos
       createTable conn name path columns body
-    hClose handle
+    else do
+      handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
+      (columns, body) <- File.readFromFile opts handle
+      when (length columns == 0) $ do
+        hPutStrLn stderr $ if Option.skipHeader opts
+                              then "Header line is expected but missing in file " ++ path
+                              else "Warning - data is empty"
+        exitFailure
+      when (any (elem ',') columns) $ do
+        hPutStrLn stderr "Column name cannot contain commas"
+        exitFailure
+      when (length columns >= 1) $
+        createTable conn name path columns body
+      hClose handle
   where unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
         unquote xs = xs
 
