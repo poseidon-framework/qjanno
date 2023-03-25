@@ -1,0 +1,6 @@
+<<query>>:1:10:
+SELECT * FROM
+         ^
+"<<query>>" (line 1, column 10):
+unexpected end of input
+expecting (, lateral or {
