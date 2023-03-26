@@ -3,7 +3,7 @@ module Main where
 import Control.Applicative
 import Control.Monad (forM_, guard, when)
 import Data.Char (isSpace)
-import Data.List (intercalate, transpose)
+import Data.List (intercalate, transpose, isPrefixOf)
 import qualified Data.Map as Map
 import Data.Maybe
 import qualified Data.Set as Set
@@ -87,9 +87,10 @@ readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameM
 readFilesCreateTables opts conn tableMap =
   forM_ (Map.toList tableMap) $ \(path, name) -> do
     let path' = unquote path
-    if path' == "jannos"
+    if "d(" `isPrefixOf` path'
     then do
-      allJannoPaths <- Janno.findAllJannoFiles "." -- needs a better mechanism to set the search path
+      let baseDirs = Janno.extractBaseDirs path'
+      allJannoPaths <- concat <$> mapM Janno.findAllJannoFiles baseDirs
       let jannoOpts = opts {Option.skipHeader = True, Option.tabDelimited = True}
       allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
       allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles

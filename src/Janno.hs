@@ -7,6 +7,22 @@ import qualified Data.Map.Strict as M
 import Data.Foldable (foldl')
 import Data.List (transpose)
 import qualified Data.Set as Set
+import Data.Char (isSpace)
+
+extractBaseDirs :: String -> [FilePath]
+extractBaseDirs baseDirsString =
+    map trimWS $ splitDirs $ removeFrame baseDirsString
+    where
+        removeFrame :: String -> String
+        removeFrame s = reverse $ drop 1 $ reverse $ drop 2 s
+        splitDirs :: String -> [String]
+        splitDirs s =
+            let p = (==',')
+            in case dropWhile p s of
+              "" -> []
+              s' -> w : splitDirs s'' where (w, s'') = break p s'
+        trimWS :: String -> String
+        trimWS = f . f where f = reverse . dropWhile isSpace
 
 findAllJannoFiles :: FilePath -> IO [FilePath]
 findAllJannoFiles baseDir = do
