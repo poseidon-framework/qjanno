@@ -19,7 +19,7 @@ qjannoSpec =
           "count", "is_null", "not_null", "output_header", "spaces",
           "output_delimiter", "tab_delimited_output", "multiline",
           "query_file", "empty_query", "empty_query_file", "file_spaces",
-          "gzip", "gzip_stdin", "avg", "sum", "avg_sum", "seq",
+          "avg", "sum", "avg_sum", "seq",
           "group", "group_sum", "concat", "join", "invalid"
           ]
 
