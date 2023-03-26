@@ -24,7 +24,7 @@ import qualified Janno as Janno
 main :: IO ()
 main = runCommand =<< execParser opts
   where opts = info (helper <*> Option.version <*> Option.options)
-                    (fullDesc <> header "qhs - SQL queries on CSV and TSV files")
+                    (fullDesc <> header "qjanno - SQL queries on CSV and TSV files")
 
 runCommand :: Option.Option -> IO ()
 runCommand opts = do
@@ -80,7 +80,7 @@ parseQuery qs = do
             else do
               hPutStrLn stderr "Invalid table name:"
               hPutStrLn stderr $ "  " ++ show (Set.union (xs \\ ys) (ys \\ xs))
-              hPutStrLn stderr "Probably a bug of qhs. Please submit a issue report."
+              hPutStrLn stderr "Probably a bug of qjanno. Please submit a issue report."
               exitFailure
 
 readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameMap -> IO ()

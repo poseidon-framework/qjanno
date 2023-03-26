@@ -1,1 +1,1 @@
-qhs -q empty.sql
+qjanno -q empty.sql

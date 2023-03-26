@@ -1,1 +1,1 @@
-qhs -H -O "SELECT foo,bar,quux FROM multiline.csv LIMIT 1"
+qjanno -H -O "SELECT foo,bar,quux FROM multiline.csv LIMIT 1"

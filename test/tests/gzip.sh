@@ -1,1 +1,1 @@
-qhs "SELECT * FROM basic.csv.gz"
+qjanno "SELECT * FROM basic.csv.gz"

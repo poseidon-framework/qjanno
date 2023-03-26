@@ -1,1 +1,1 @@
-qhs -H "SELECT foo,baz FROM basic.csv"
+qjanno -H "SELECT foo,baz FROM basic.csv"

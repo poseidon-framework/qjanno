@@ -1,1 +1,1 @@
-qhs -H "SELECT foo,baz FROM basic.csv WHERE baz <> 'b2'"
+qjanno -H "SELECT foo,baz FROM basic.csv WHERE baz <> 'b2'"

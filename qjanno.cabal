@@ -1,16 +1,18 @@
-name:                   qhs
-version:                0.3.3
-author:                 itchyny <https://github.com/itchyny>
-maintainer:             itchyny <https://github.com/itchyny>
+name:                   qjanno
+version:                0.1.0
+author:                 itchyny <https://github.com/itchyny>, Clemens Schmid
+maintainer:             Clemens Schmid <clemens@nevrome.de>
 license:                MIT
 license-file:           LICENSE
 category:               Console
 build-type:             Simple
 cabal-version:          >=1.10
-synopsis:               Command line tool qhs, SQL queries on CSV and TSV files.
-description:            This is a Haskell port of q command (https://github.com/harelba/q).
+synopsis:               Command line tool qjanno, SQL queries on .janno (and arbitrary CSV and TSV) files.
+description:            This is an adjusted version and fork of the qsh package (https://github.com/itchyny/qhs).
+extra-source-files:     README.md,
+                        CHANGELOG.md
 
-executable qhs
+executable qjanno
   hs-source-dirs:       src
   main-is:              Main.hs
   ghc-options:          -threaded -Wall
@@ -20,7 +22,7 @@ executable qhs
                       , SQLType
                       , File
                       , Option
-                      , Paths_qhs
+                      , Paths_qjanno
                       , Janno
   build-depends:        base >= 4.9 && < 5
                       , bytestring
@@ -44,7 +46,7 @@ test-suite spec
                       , SQLType
                       , File
                       , Option
-                      , Paths_qhs
+                      , Paths_qjanno
                       , ParserSpec
                       , SQLSpec
                       , FileSpec
@@ -66,4 +68,4 @@ test-suite spec
 
 source-repository head
   type:     git
-  location: git@github.com:itchyny/qhs.git
+  location: git@github.com:poseidon-framework/qjanno.git

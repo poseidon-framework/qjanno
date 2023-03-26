@@ -1,1 +1,1 @@
-qhs -H "SELECT avg(bar) FROM basic.csv"
+qjanno -H "SELECT avg(bar) FROM basic.csv"

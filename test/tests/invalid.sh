@@ -1,1 +1,1 @@
-qhs "SELECT * FROM"
+qjanno "SELECT * FROM"

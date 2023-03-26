@@ -1,1 +1,1 @@
-qhs -H -O -T "SELECT * FROM basic.csv"
+qjanno -H -O -T "SELECT * FROM basic.csv"

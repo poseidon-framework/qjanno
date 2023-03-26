@@ -3,7 +3,7 @@ module Option where
 import Data.Version (showVersion)
 import Options.Applicative
 
-import qualified Paths_qhs as QHS
+import qualified Paths_qjanno as QJANNO
 
 -- | Command options
 data Option = Option { skipHeader :: Bool,
@@ -50,7 +50,7 @@ options = Option
 
 -- | Parser for --version/-v
 version :: Parser (a -> a)
-version = abortOption (InfoMsg ("qhs " ++ showVersion QHS.version)) $
+version = abortOption (InfoMsg ("qjanno " ++ showVersion QJANNO.version)) $
     long "version" <>
     short 'v' <>
     help "Show the version of the command." <>

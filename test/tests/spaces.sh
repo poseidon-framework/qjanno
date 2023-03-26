@@ -1,1 +1,1 @@
-qhs -H -O "SELECT * FROM spaces.csv"
+qjanno -H -O "SELECT * FROM spaces.csv"

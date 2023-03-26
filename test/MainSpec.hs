@@ -7,12 +7,12 @@ import System.Process
 import Test.Hspec (Spec, describe, it, shouldReturn)
 
 spec :: Spec
-spec = qhsSpec
+spec = qjannoSpec
 
-qhsSpec :: Spec
-qhsSpec =
+qjannoSpec :: Spec
+qjannoSpec =
 
-  describe "qhs" $ do
+  describe "qjanno" $ do
 
     let tests = [
           "basic", "columns", "stdin", "header", "where", "tab", "tab2",
