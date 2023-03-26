@@ -5,3 +5,9 @@
 # qjanno
 
 Command line tool to allow SQL queries on .janno (and arbitrary CSV and TSV) files. This is an adjusted version and fork of the qsh package (https://github.com/itchyny/qhs).
+
+Example:
+
+```
+qjanno "SELECT Poseidon_ID,Country,Date_BC_AD_Median FROM d(2020_Linderholm_Poland,2020_Furtwaengler_Switzerland) WHERE (Country = 'France' OR Country = 'Poland') ORDER BY Date_BC_AD_Median DESC" -T
+```
