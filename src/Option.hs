@@ -1,20 +1,20 @@
 module Option where
 
-import Data.Version (showVersion)
-import Options.Applicative
+import           Data.Version        (showVersion)
+import           Options.Applicative
 
-import qualified Paths_qjanno as QJANNO
+import qualified Paths_qjanno        as QJANNO
 
 -- | Command options
-data Option = Option { skipHeader :: Bool,
-                       outputHeader :: Bool,
-                       delimiter :: Maybe String,
-                       tabDelimited :: Bool,
-                       outputDelimiter :: Maybe String,
-                       tabDelimitedOutput :: Bool,
+data Option = Option { skipHeader            :: Bool,
+                       outputHeader          :: Bool,
+                       delimiter             :: Maybe String,
+                       tabDelimited          :: Bool,
+                       outputDelimiter       :: Maybe String,
+                       tabDelimitedOutput    :: Bool,
                        keepLeadingWhiteSpace :: Bool,
-                       queryFile :: Maybe String,
-                       query :: Maybe String }
+                       queryFile             :: Maybe String,
+                       query                 :: Maybe String }
 
 -- | Option parser
 options :: Parser Option

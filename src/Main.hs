@@ -1,25 +1,26 @@
 module Main where
 
-import Control.Applicative
-import Control.Monad (forM_, guard, when)
-import Data.Char (isSpace)
-import Data.List (intercalate, transpose, isPrefixOf)
-import qualified Data.Map as Map
-import Data.Maybe
-import qualified Data.Set as Set
-import Data.Set ((\\))
+import           Control.Applicative
+import           Control.Monad          (forM_, guard, when)
+import           Data.Char              (isSpace)
+import           Data.List              (intercalate, isPrefixOf, transpose)
+import qualified Data.Map               as Map
+import           Data.Maybe
+import           Data.Set               ((\\))
+import qualified Data.Set               as Set
 import qualified Database.SQLite.Simple as SQLite
-import Options.Applicative (execParser, helper, info, fullDesc, header)
-import System.Exit (exitFailure)
-import System.IO
-import Text.Read (readMaybe)
+import           Options.Applicative    (execParser, fullDesc, header, helper,
+                                         info)
+import           System.Exit            (exitFailure)
+import           System.IO
+import           Text.Read              (readMaybe)
 
-import qualified File as File
-import qualified Option as Option
-import qualified Parser as Parser
-import qualified SQL as SQL
-import qualified SQLType as SQLType
-import qualified Janno as Janno
+import qualified File                   as File
+import qualified Janno                  as Janno
+import qualified Option                 as Option
+import qualified Parser                 as Parser
+import qualified SQL                    as SQL
+import qualified SQLType                as SQLType
 
 main :: IO ()
 main = runCommand =<< execParser opts

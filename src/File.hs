@@ -1,12 +1,12 @@
 module File where
 
-import Control.Applicative ((<|>))
-import Control.Monad (guard, when)
-import Data.Char (isSpace)
-import System.Exit (exitFailure)
-import System.IO
+import           Control.Applicative ((<|>))
+import           Control.Monad       (guard, when)
+import           Data.Char           (isSpace)
+import           System.Exit         (exitFailure)
+import           System.IO
 
-import qualified Option as Option
+import qualified Option              as Option
 
 readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
 readFromFile opts handle = do
@@ -18,7 +18,7 @@ readFromFile opts handle = do
     exitFailure
   let splitter = case delimiter of
                       Just [c] -> (==) c
-                      _ -> detectSplitter headLine secondLine
+                      _        -> detectSplitter headLine secondLine
   let headColumns = splitFixedSize splitter 0 headLine
   let size = length headColumns
   let columns = if Option.skipHeader opts then headColumns else [ 'c' : show i | i <- [1..size] ]
@@ -28,11 +28,11 @@ readFromFile opts handle = do
   return (columns, body)
   where joinMultiLines (cs:ds:css) | valid True cs = cs : joinMultiLines (ds:css)
                                    | otherwise = joinMultiLines $ (cs ++ "\n" ++ ds) : css
-          where valid False ('"':'"':xs) = valid False xs
+          where valid False ('"':'"':xs)  = valid False xs
                 valid False ('\\':'"':xs) = valid False xs
-                valid b ('"':xs) = valid (not b) xs
-                valid b (_:xs) = valid b xs
-                valid b "" = b
+                valid b ('"':xs)          = valid (not b) xs
+                valid b (_:xs)            = valid b xs
+                valid b ""                = b
         joinMultiLines css = css
 
 detectSplitter :: String -> String -> Char -> Bool

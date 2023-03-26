@@ -1,10 +1,10 @@
 module MainSpec (spec) where
 
-import Control.Applicative
-import Control.Monad
-import System.IO
-import System.Process
-import Test.Hspec (Spec, describe, it, shouldReturn)
+import           Control.Applicative
+import           Control.Monad
+import           System.IO
+import           System.Process
+import           Test.Hspec          (Spec, describe, it, shouldReturn)
 
 spec :: Spec
 spec = qjannoSpec

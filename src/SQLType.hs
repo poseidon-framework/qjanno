@@ -1,12 +1,12 @@
 module SQLType (SQLType(..), showType, Any, fromColumnsAndEntries) where
 
-import Data.String (IsString(..))
-import qualified Data.Text as T
-import Database.SQLite.Simple
-import Database.SQLite.Simple.FromField
-import Database.SQLite.Simple.Internal (Field(..))
-import Database.SQLite.Simple.Ok
-import Text.Read (readMaybe)
+import           Data.String                      (IsString (..))
+import qualified Data.Text                        as T
+import           Database.SQLite.Simple
+import           Database.SQLite.Simple.FromField
+import           Database.SQLite.Simple.Internal  (Field (..))
+import           Database.SQLite.Simple.Ok
+import           Text.Read                        (readMaybe)
 
 data SQLType = SQLChar | SQLInt
 
@@ -14,7 +14,7 @@ showType :: SQLType -> String
 showType t =
   case t of
     SQLChar -> "CHAR"
-    SQLInt -> "INTEGER"
+    SQLInt  -> "INTEGER"
 
 data Any = AnyDouble Double | AnyInt Int | AnyString String | AnyNull
          deriving (Eq)
@@ -31,14 +31,14 @@ instance IsString Any where
     case readMaybe s of
          Just i -> AnyInt i
          Nothing -> case readMaybe s of
-                         Just d -> AnyDouble d
+                         Just d  -> AnyDouble d
                          Nothing -> if s == "" then AnyNull else AnyString s
 
 instance Show Any where
   show (AnyDouble d) = show d
-  show (AnyInt i) = show i
+  show (AnyInt i)    = show i
   show (AnyString s) = s
-  show AnyNull = ""
+  show AnyNull       = ""
 
 fromColumnsAndEntries :: [String] -> [[String]] -> ([String], [[Any]])
 fromColumnsAndEntries columns xs = (columns, map (map fromString) xs)

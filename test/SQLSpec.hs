@@ -1,10 +1,10 @@
 module SQLSpec (spec) where
 
-import Control.Monad
-import Test.Hspec (Spec, describe, it, shouldBe)
+import           Control.Monad
+import           Test.Hspec    (Spec, describe, it, shouldBe)
 
-import SQL
-import SQLType
+import           SQL
+import           SQLType
 
 spec :: Spec
 spec = do

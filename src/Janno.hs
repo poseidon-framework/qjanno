@@ -1,13 +1,13 @@
 module Janno where
 
-import           System.Directory           (doesDirectoryExist, listDirectory)
-import           System.FilePath            ((</>), takeFileName, takeExtension)
-import Control.Monad (filterM)
-import qualified Data.Map.Strict as M
-import Data.Foldable (foldl')
-import Data.List (transpose)
-import qualified Data.Set as Set
-import Data.Char (isSpace)
+import           Control.Monad    (filterM)
+import           Data.Char        (isSpace)
+import           Data.Foldable    (foldl')
+import           Data.List        (transpose)
+import qualified Data.Map.Strict  as M
+import qualified Data.Set         as Set
+import           System.Directory (doesDirectoryExist, listDirectory)
+import           System.FilePath  (takeExtension, takeFileName, (</>))
 
 extractBaseDirs :: String -> [FilePath]
 extractBaseDirs baseDirsString =

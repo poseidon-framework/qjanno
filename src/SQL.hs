@@ -1,13 +1,13 @@
 module SQL (open, close, createTable, insertRow, execute) where
 
-import Control.Exception (try, SomeException)
-import Control.Monad (forM)
-import Data.List (intersperse)
-import Data.String (fromString)
-import qualified Data.Text as T
+import           Control.Exception      (SomeException, try)
+import           Control.Monad          (forM)
+import           Data.List              (intersperse)
+import           Data.String            (fromString)
+import qualified Data.Text              as T
 import qualified Database.SQLite.Simple as SQLite
 
-import SQLType
+import           SQLType
 
 -- | Open a new database connection.
 open :: String -> IO SQLite.Connection
@@ -37,12 +37,12 @@ insertRow conn name columns types entry = do
           quote (t, cs) | isDigitType t = cs
                         | otherwise = "'" ++ toSQLString cs ++ "'"
           isDigitType SQLInt = True
-          isDigitType _ = False
+          isDigitType _      = False
 
 toSQLString :: String -> String
-toSQLString "" = ""
+toSQLString ""        = ""
 toSQLString ('\'':xs) = '\'':'\'':toSQLString xs
-toSQLString (x:xs) = x : toSQLString xs
+toSQLString (x:xs)    = x : toSQLString xs
 
 -- | Executes a SQL statement.
 execute :: SQLite.Connection -> String -> IO (Either String ([String], [[Any]]))
