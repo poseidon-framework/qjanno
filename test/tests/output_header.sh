@@ -1,1 +1,1 @@
-qjanno -H -O "SELECT foo,baz FROM basic.csv"
+qjanno --outHeader "SELECT foo,baz FROM basic.csv"

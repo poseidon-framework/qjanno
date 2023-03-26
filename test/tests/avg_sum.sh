@@ -1,1 +1,1 @@
-qjanno -H -O "SELECT avg(bar),sum(bar) FROM basic.csv"
+qjanno --outHeader "SELECT avg(bar),sum(bar) FROM basic.csv"

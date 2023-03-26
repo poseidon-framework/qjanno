@@ -21,8 +21,8 @@ readFromFile opts handle = do
                       _        -> detectSplitter headLine secondLine
   let headColumns = splitFixedSize splitter 0 headLine
   let size = length headColumns
-  let columns = if Option.skipHeader opts then headColumns else [ 'c' : show i | i <- [1..size] ]
-  let skipLine = if Option.skipHeader opts then tail else id
+  let columns = if Option.noHeader opts then [ 'c' : show i | i <- [1..size] ] else headColumns
+  let skipLine = if Option.noHeader opts then id else tail
   let stripSpaces = if Option.keepLeadingWhiteSpace opts then id else dropWhile isSpace
   let body = filter (not . null) $ map (map stripSpaces . splitFixedSize splitter size) (skipLine contents)
   return (columns, body)

@@ -1,1 +1,1 @@
-qjanno -H -O -D '|' "SELECT * FROM basic.csv"
+qjanno --outHeader --outSep '|' "SELECT * FROM basic.csv"

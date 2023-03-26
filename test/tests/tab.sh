@@ -1,1 +1,1 @@
-qjanno -t -T -H "SELECT * FROM tab.csv"
+qjanno -t -T "SELECT * FROM tab.csv"

@@ -1,1 +1,1 @@
-qjanno -H -O "SELECT * FROM spaces.csv"
+qjanno --outHeader "SELECT * FROM spaces.csv"

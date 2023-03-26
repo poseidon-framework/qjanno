@@ -1,1 +1,1 @@
-qjanno -H "SELECT sum(bar) FROM basic.csv"
+qjanno "SELECT sum(bar) FROM basic.csv"

@@ -1,1 +1,1 @@
-qjanno -H "SELECT avg(bar) FROM basic.csv"
+qjanno "SELECT avg(bar) FROM basic.csv"

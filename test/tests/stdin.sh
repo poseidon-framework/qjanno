@@ -1,1 +1,1 @@
-cat basic.csv | qjanno -H "SELECT foo,baz FROM - WHERE bar IS NOT NULL"
+cat basic.csv | qjanno "SELECT foo,baz FROM - WHERE bar IS NOT NULL"

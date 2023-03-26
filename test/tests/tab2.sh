@@ -1,1 +1,1 @@
-qjanno -d $'\t' -D $'\t' -H "SELECT * FROM tab.csv"
+qjanno --sep $'\t' --outSep $'\t' "SELECT * FROM tab.csv"

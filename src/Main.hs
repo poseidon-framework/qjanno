@@ -8,9 +8,9 @@ import qualified Data.Map               as Map
 import           Data.Maybe
 import           Data.Set               ((\\))
 import qualified Data.Set               as Set
+import           Data.Version           (showVersion)
 import qualified Database.SQLite.Simple as SQLite
-import           Options.Applicative    (execParser, fullDesc, header, helper,
-                                         info)
+import qualified Options.Applicative    as OP
 import           System.Exit            (exitFailure)
 import           System.IO
 import           Text.Read              (readMaybe)
@@ -19,13 +19,23 @@ import qualified File                   as File
 import qualified Janno                  as Janno
 import qualified Option                 as Option
 import qualified Parser                 as Parser
+import           Paths_qjanno           (version)
 import qualified SQL                    as SQL
 import qualified SQLType                as SQLType
 
 main :: IO ()
-main = runCommand =<< execParser opts
-  where opts = info (helper <*> Option.version <*> Option.options)
-                    (fullDesc <> header "qjanno - SQL queries on CSV and TSV files")
+main = do
+    cmdOpts <- OP.customExecParser (OP.prefs OP.showHelpOnEmpty) optParserInfo
+    runCommand cmdOpts
+
+optParserInfo :: OP.ParserInfo Option.Option
+optParserInfo = OP.info (OP.helper <*> versionOption <*> Option.options) (
+    OP.briefDesc <>
+    OP.progDesc "Command line tool to allow SQL queries on .janno (and arbitrary .csv and .tsv) files."
+    )
+
+versionOption :: OP.Parser (a -> a)
+versionOption = OP.infoOption (showVersion version) (OP.long "version" <> OP.help "Show qjanno version")
 
 runCommand :: Option.Option -> IO ()
 runCommand opts = do
@@ -62,7 +72,7 @@ fetchQuery opts = do
                                  Nothing -> mapM readFile (Option.queryFile opts)
   when (all isSpace query) $ do
     hPutStrLn stderr "Query cannot be empty."
-    hPutStrLn stderr "For basic information, try the `--help' option."
+    hPutStrLn stderr "See, qjanno -h for help."
     exitFailure
   return query
 
@@ -92,7 +102,7 @@ readFilesCreateTables opts conn tableMap =
     then do
       let baseDirs = Janno.extractBaseDirs path'
       allJannoPaths <- concat <$> mapM Janno.findAllJannoFiles baseDirs
-      let jannoOpts = opts {Option.skipHeader = True, Option.tabDelimited = True}
+      let jannoOpts = opts {Option.tabDelimited = True}
       allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
       allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
       let (columns, body) = Janno.mergeJannos allJannos
@@ -101,9 +111,9 @@ readFilesCreateTables opts conn tableMap =
       handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
       (columns, body) <- File.readFromFile opts handle
       when (length columns == 0) $ do
-        hPutStrLn stderr $ if Option.skipHeader opts
-                              then "Header line is expected but missing in file " ++ path
-                              else "Warning - data is empty"
+        hPutStrLn stderr $ if Option.noHeader opts
+                              then "Warning - data is empty"
+                              else "Header line is expected but missing in file " ++ path
         exitFailure
       when (any (elem ',') columns) $ do
         hPutStrLn stderr "Column name cannot contain commas"

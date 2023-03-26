@@ -16,7 +16,7 @@ spec = do
 readFromFileSpec :: Spec
 readFromFileSpec =
   describe "readFromFile" $ do
-    let opts = Option { skipHeader = True,
+    let opts = Option { noHeader = False,
                         outputHeader = False,
                         delimiter = Nothing,
                         tabDelimited = False,
