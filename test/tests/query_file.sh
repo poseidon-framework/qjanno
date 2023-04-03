@@ -1,1 +1,1 @@
-cat basic.csv | qjanno --outHeader -q query.sql
+cat basic.csv | qjanno -q query.sql

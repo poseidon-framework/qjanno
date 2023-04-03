@@ -1,1 +1,1 @@
-qjanno --outHeader "SELECT COUNT(*) FROM basic.csv WHERE baz <> 'b2'"
+qjanno "SELECT COUNT(*) FROM basic.csv WHERE baz <> 'b2'"

@@ -15,9 +15,9 @@ qjannoSpec =
   describe "qjanno" $ do
 
     let tests = [
-          "basic", "columns", "stdin", "header", "where", "tab", "tab2",
+          "basic", "columns", "stdin", "where", "tab", "tab2",
           "count", "is_null", "not_null", "output_header", "spaces",
-          "output_delimiter", "tab_delimited_output", "multiline",
+          "tab_delimited_output", "multiline",
           "query_file", "empty_query", "empty_query_file", "file_spaces",
           "avg", "sum", "avg_sum", "seq",
           "group", "group_sum", "concat", "join", "invalid"

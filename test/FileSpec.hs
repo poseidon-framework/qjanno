@@ -16,15 +16,14 @@ spec = do
 readFromFileSpec :: Spec
 readFromFileSpec =
   describe "readFromFile" $ do
-    let opts = Option { noHeader = False,
-                        outputHeader = False,
-                        delimiter = Nothing,
-                        tabDelimited = False,
-                        outputDelimiter = Nothing,
-                        tabDelimitedOutput = False,
-                        keepLeadingWhiteSpace = False,
+    let opts = Option { query = Nothing,
                         queryFile = Nothing,
-                        query = Nothing }
+                        showColumns = False,
+                        tabDelimited = False,
+                        delimiter = Nothing,
+                        noHeader = False,
+                        outputRaw = True,
+                        outputNoHeader = False }
 
     it "should read from a test file" $ do
       handle <- openFile "test/tests/basic.csv" ReadMode

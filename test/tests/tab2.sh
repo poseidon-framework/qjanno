@@ -1,1 +1,1 @@
-qjanno --sep $'\t' --outSep $'\t' "SELECT * FROM tab.csv"
+qjanno --sep $'\t' --raw "SELECT * FROM tab.csv" --noOutHeader
