@@ -125,7 +125,8 @@ readFilesCreateTables opts conn tableMap =
         unquote xs = xs
 
 createTable :: SQLite.Connection -> String -> String -> [String] -> [[String]] -> IO ()
-createTable conn name path columns body = do
+createTable conn name path columns bodyRaw = do
+  let body = makeNAEmptyString bodyRaw
   let probablyNumberColumn =
         [ all isJust [ readMaybe x :: Maybe Float | x <- xs, not (all isSpace x) ]
                                                   | xs <- transpose body ]
@@ -139,3 +140,10 @@ createTable conn name path columns body = do
        Nothing ->
          forM_ body $ \entry -> do
            mapM_ (hPutStrLn stderr) =<< SQL.insertRow conn name columns types entry
+
+makeNAEmptyString :: [[String]] -> [[String]]
+makeNAEmptyString = map (map trans)
+    where
+        trans :: String -> String
+        trans "n/a" = ""
+        trans x = x
