@@ -12,10 +12,8 @@ data Option = Option {
     tabDelimited          :: Bool,
     delimiter             :: Maybe String,
     noHeader              :: Bool,
-    keepLeadingWhiteSpace :: Bool,
-    tabDelimitedOutput    :: Bool,
-    outputDelimiter       :: Maybe String,
-    outputHeader          :: Bool
+    outputRaw             :: Bool,
+    outputNoHeader        :: Bool
   }
 
 -- | Option parser
@@ -41,24 +39,16 @@ options = Option
   <*> optional (strOption (
        long "sep"
     <> metavar "DELIM"
-    <> help "Field delimiter. Will be automatically detected if it's not specified."))
+    <> help "Input file field delimiter. Will be automatically detected if it's not specified."))
   <*> switch (
        long "noHeader"
     <> help "Does the file have no column names?")
   <*> switch (
-       long "keepWS"
-    <> help "Keep leading whitespace in values. The leading whitespaces are stripped off by default.")
+       long "raw"
+    <> help "Return the output table as tsv.")
   <*> switch (
-       long "tabSepOut"
-    <> short 'T'
-    <> help "Short for --outSep $'\\t'.")
-  <*> optional (strOption (
-       long "outSep"
-    <> metavar "DELIM"
-    <> help "Field delimiter for the output. If not specified, the argument of --sep is used."))
-  <*> switch (
-       long "outHeader"
-    <> help "Add the header line to the output.")
+       long "noOutHeader"
+    <> help "Remove the header line from the output.")
 
 -- | Parser for --version/-v
 version :: Parser (a -> a)

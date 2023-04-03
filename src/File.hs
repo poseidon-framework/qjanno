@@ -23,7 +23,7 @@ readFromFile opts handle = do
   let size = length headColumns
   let columns = if Option.noHeader opts then [ 'c' : show i | i <- [1..size] ] else headColumns
   let skipLine = if Option.noHeader opts then id else tail
-  let stripSpaces = if Option.keepLeadingWhiteSpace opts then id else dropWhile isSpace
+  let stripSpaces = dropWhile isSpace
   let body = filter (not . null) $ map (map stripSpaces . splitFixedSize splitter size) (skipLine contents)
   return (columns, body)
   where joinMultiLines (cs:ds:css) | valid True cs = cs : joinMultiLines (ds:css)

@@ -1,7 +1,6 @@
 module Main where
 
-import           Control.Applicative
-import           Control.Monad          (forM_, guard, when)
+import           Control.Monad          (forM_, when, unless)
 import           Data.Char              (isSpace)
 import           Data.List              (intercalate, isPrefixOf, transpose)
 import qualified Data.Map               as Map
@@ -14,6 +13,8 @@ import qualified Options.Applicative    as OP
 import           System.Exit            (exitFailure)
 import           System.IO
 import           Text.Read              (readMaybe)
+import           Text.Layout.Table      (asciiRoundS, column, def, expandUntil,
+                                         rowsG, tableString, titlesH)
 
 import qualified File                   as File
 import qualified Janno                  as Janno
@@ -22,6 +23,7 @@ import qualified Parser                 as Parser
 import           Paths_qjanno           (version)
 import qualified SQL                    as SQL
 import qualified SQLType                as SQLType
+import Text.Layout.Table.Spec.HeaderSpec (HeaderSpec(..))
 
 main :: IO ()
 main = do
@@ -49,18 +51,24 @@ runQuery opts conn (query, tableMap) = do
   readFilesCreateTables opts conn tableMap
   ret <- SQL.execute conn query
   case ret of
-       Right (cs, rs) -> do
-         let outputDelimiter =
-               fromMaybe " " $ guard (Option.tabDelimitedOutput opts) *> Just "\t"
-                            <|> Option.outputDelimiter opts
-                            <|> guard (Option.tabDelimited opts) *> Just "\t"
-                            <|> Option.delimiter opts
-         when (Option.outputHeader opts) $
-           putStrLn $ intercalate outputDelimiter $ cs
-         mapM_ (putStrLn . intercalate outputDelimiter . map show) rs
-       Left err -> do
-         hPutStrLn stderr err
-         exitFailure
+      Right (cs, rs) -> do
+          let tableH = cs
+              tableB = map (map show) rs
+          if Option.outputRaw opts
+          then do
+              unless (Option.outputNoHeader opts) $ putStrLn $ intercalate "\t" $ tableH
+              putStrLn $ intercalate "\n" [intercalate "\t" row | row <- tableB]
+          else do
+              let colSpecs = replicate (length tableH) (column (expandUntil 60) def def def)
+              if Option.outputNoHeader opts
+              then do
+                  putStrLn $ tableString colSpecs asciiRoundS NoneHS [rowsG tableB]
+              else do
+                  putStrLn $ tableString colSpecs asciiRoundS (titlesH tableH) [rowsG tableB]
+      Left err -> do
+          hPutStrLn stderr err
+          exitFailure
+
 
 fetchQuery :: Option.Option -> IO String
 fetchQuery opts = do

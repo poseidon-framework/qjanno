@@ -36,6 +36,7 @@ executable qjanno
                       , text
                       , directory
                       , filepath
+                      , table-layout
 
 test-suite spec
   hs-source-dirs:       test,src
