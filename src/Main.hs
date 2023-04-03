@@ -1,6 +1,6 @@
 module Main where
 
-import           Control.Monad          (forM_, when, unless)
+import           Control.Monad          (forM, forM_, when, unless)
 import           Data.Char              (isSpace)
 import           Data.List              (intercalate, isPrefixOf, transpose)
 import qualified Data.Map               as Map
@@ -48,10 +48,24 @@ runCommand opts = do
 
 runQuery :: Option.Option -> SQLite.Connection -> (String, Parser.TableNameMap) -> IO ()
 runQuery opts conn (query, tableMap) = do
-  readFilesCreateTables opts conn tableMap
-  ret <- SQL.execute conn query
-  case ret of
-      Right (cs, rs) -> do
+  columnOverview <- readFilesCreateTables opts conn tableMap
+  if Option.showColumns opts
+  then do
+      -- just show columns
+      let columnOverviewTransformed = concat $ map (\(p, cs) -> map (\c -> [c, p]) cs) columnOverview
+      printTable ["Column", "File"] columnOverviewTransformed
+  else do 
+      -- run regular query
+      ret <- SQL.execute conn query
+      case ret of
+          Right (colnames, rows) -> do
+              printTable colnames rows
+          Left err -> do
+              hPutStrLn stderr err
+              exitFailure
+  where
+      printTable :: Show a => [String] -> [[a]] -> IO ()
+      printTable cs rs = do
           let tableH = cs
               tableB = map (map show) rs
           if Option.outputRaw opts
@@ -65,9 +79,6 @@ runQuery opts conn (query, tableMap) = do
                   putStrLn $ tableString colSpecs asciiRoundS NoneHS [rowsG tableB]
               else do
                   putStrLn $ tableString colSpecs asciiRoundS (titlesH tableH) [rowsG tableB]
-      Left err -> do
-          hPutStrLn stderr err
-          exitFailure
 
 
 fetchQuery :: Option.Option -> IO String
@@ -102,9 +113,9 @@ parseQuery qs = do
               hPutStrLn stderr "Probably a bug of qjanno. Please submit a issue report."
               exitFailure
 
-readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameMap -> IO ()
-readFilesCreateTables opts conn tableMap =
-  forM_ (Map.toList tableMap) $ \(path, name) -> do
+readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameMap -> IO [(String, [String])]
+readFilesCreateTables opts conn tableMap = do
+  forM (Map.toList tableMap) $ \(path, name) -> do
     let path' = unquote path
     if "d(" `isPrefixOf` path'
     then do
@@ -115,6 +126,7 @@ readFilesCreateTables opts conn tableMap =
       allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
       let (columns, body) = Janno.mergeJannos allJannos
       createTable conn name path columns body
+      return (path, columns)
     else do
       handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
       (columns, body) <- File.readFromFile opts handle
@@ -129,6 +141,7 @@ readFilesCreateTables opts conn tableMap =
       when (length columns >= 1) $
         createTable conn name path columns body
       hClose handle
+      return (path, columns)
   where unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
         unquote xs = xs
 

@@ -9,6 +9,7 @@ import qualified Paths_qjanno        as QJANNO
 data Option = Option {
     query                 :: Maybe String,
     queryFile             :: Maybe String,
+    showColumns           :: Bool,
     tabDelimited          :: Bool,
     delimiter             :: Maybe String,
     noHeader              :: Bool,
@@ -31,7 +32,11 @@ options = Option
        long "queryFile"
     <> short 'q'
     <> metavar "FILE"
-    <> help "Read query from the provided filename."))
+    <> help "Read query from the provided file."))
+  <*> switch (
+       long "showColumns"
+    <> short 'c'
+    <> help "Don't run the query, but show all available columns in the input files.")
   <*> switch (
        long "tabSep"
     <> short 't'
@@ -42,7 +47,8 @@ options = Option
     <> help "Input file field delimiter. Will be automatically detected if it's not specified."))
   <*> switch (
        long "noHeader"
-    <> help "Does the file have no column names?")
+    <> help "Does the input file have no column names? They will be filled automatically with \
+            \placeholders of the form c1,c2,c3,...")
   <*> switch (
        long "raw"
     <> help "Return the output table as tsv.")
