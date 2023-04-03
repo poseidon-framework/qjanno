@@ -1,29 +1,31 @@
 module Main where
 
-import           Control.Monad          (forM, forM_, when, unless)
-import           Data.Char              (isSpace)
-import           Data.List              (intercalate, isPrefixOf, transpose)
-import qualified Data.Map               as Map
+import           Control.Monad                     (forM, forM_, unless, when)
+import           Data.Char                         (isSpace)
+import           Data.List                         (intercalate, isPrefixOf,
+                                                    transpose)
+import qualified Data.Map                          as Map
 import           Data.Maybe
-import           Data.Set               ((\\))
-import qualified Data.Set               as Set
-import           Data.Version           (showVersion)
-import qualified Database.SQLite.Simple as SQLite
-import qualified Options.Applicative    as OP
-import           System.Exit            (exitFailure)
+import           Data.Set                          ((\\))
+import qualified Data.Set                          as Set
+import           Data.Version                      (showVersion)
+import qualified Database.SQLite.Simple            as SQLite
+import qualified Options.Applicative               as OP
+import           System.Exit                       (exitFailure)
 import           System.IO
-import           Text.Read              (readMaybe)
-import           Text.Layout.Table      (asciiRoundS, column, def, expandUntil,
-                                         rowsG, tableString, titlesH)
+import           Text.Layout.Table                 (asciiRoundS, column, def,
+                                                    expandUntil, rowsG,
+                                                    tableString, titlesH)
+import           Text.Read                         (readMaybe)
 
-import qualified File                   as File
-import qualified Janno                  as Janno
-import qualified Option                 as Option
-import qualified Parser                 as Parser
-import           Paths_qjanno           (version)
-import qualified SQL                    as SQL
-import qualified SQLType                as SQLType
-import Text.Layout.Table.Spec.HeaderSpec (HeaderSpec(..))
+import qualified File                              as File
+import qualified Janno                             as Janno
+import qualified Option                            as Option
+import qualified Parser                            as Parser
+import           Paths_qjanno                      (version)
+import qualified SQL                               as SQL
+import qualified SQLType                           as SQLType
+import           Text.Layout.Table.Spec.HeaderSpec (HeaderSpec (..))
 
 main :: IO ()
 main = do
@@ -53,21 +55,19 @@ runQuery opts conn (query, tableMap) = do
   then do
       -- just show columns
       let columnOverviewTransformed = concat $ map (\(p, cs) -> map (\c -> [c, p]) cs) columnOverview
-      printTable ["Column", "File"] columnOverviewTransformed
-  else do 
+      printTable ["Column", "Path"] columnOverviewTransformed
+  else do
       -- run regular query
       ret <- SQL.execute conn query
       case ret of
           Right (colnames, rows) -> do
-              printTable colnames rows
+              printTable colnames (map (map show) rows)
           Left err -> do
               hPutStrLn stderr err
               exitFailure
   where
-      printTable :: Show a => [String] -> [[a]] -> IO ()
-      printTable cs rs = do
-          let tableH = cs
-              tableB = map (map show) rs
+      printTable :: [String] -> [[String]] -> IO ()
+      printTable tableH tableB = do
           if Option.outputRaw opts
           then do
               unless (Option.outputNoHeader opts) $ putStrLn $ intercalate "\t" $ tableH
@@ -126,6 +126,7 @@ readFilesCreateTables opts conn tableMap = do
       allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
       let (columns, body) = Janno.mergeJannos allJannos
       createTable conn name path columns body
+      -- returns all columns for the --showColumns feature
       return (path, columns)
     else do
       handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
@@ -167,4 +168,4 @@ makeNAEmptyString = map (map trans)
     where
         trans :: String -> String
         trans "n/a" = ""
-        trans x = x
+        trans x     = x

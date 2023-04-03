@@ -7,14 +7,14 @@ import qualified Paths_qjanno        as QJANNO
 
 -- | Command options
 data Option = Option {
-    query                 :: Maybe String,
-    queryFile             :: Maybe String,
-    showColumns           :: Bool,
-    tabDelimited          :: Bool,
-    delimiter             :: Maybe String,
-    noHeader              :: Bool,
-    outputRaw             :: Bool,
-    outputNoHeader        :: Bool
+    query          :: Maybe String,
+    queryFile      :: Maybe String,
+    showColumns    :: Bool,
+    tabDelimited   :: Bool,
+    delimiter      :: Maybe String,
+    noHeader       :: Bool,
+    outputRaw      :: Bool,
+    outputNoHeader :: Bool
   }
 
 -- | Option parser
