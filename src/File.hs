@@ -11,7 +11,9 @@ import qualified Option              as Option
 readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
 readFromFile opts handle = do
   contents <- joinMultiLines <$> lines <$> hGetContents handle
-  let (headLine : secondLine : _) = contents ++ [ "", "" ]
+  let contentList = contents ++ [ "", "" ]
+      headLine = contentList !! 0
+      secondLine = contentList !! 1
   let delimiter = guard (Option.tabDelimited opts) *> Just "\t" <|> Option.delimiter opts
   when (maybe False ((/=1) . length) delimiter) $ do
     hPutStrLn stderr "Invalid delimiter."
