@@ -1,8 +1,7 @@
 module Parser (replaceTableNames, roughlyExtractTableNames, replaceBackTableNames, extractTableNames, errorString, TableNameMap) where
 
-import qualified Crypto.Hash                    as Crypto
-import qualified Data.ByteString.Char8          as Char8
-import           Data.Char                      (isNumber, isSpace, toUpper)
+import           Data.Char                      (isAlphaNum, isNumber, isSpace,
+                                                 toUpper)
 import           Data.Generics                  (everything, mkQ)
 import           Data.List                      (unfoldr)
 import qualified Data.Map                       as Map
@@ -10,20 +9,20 @@ import           Data.Tuple                     (swap)
 import qualified Language.SQL.SimpleSQL.Dialect as Dialect
 import qualified Language.SQL.SimpleSQL.Parse   as Parse
 import qualified Language.SQL.SimpleSQL.Syntax  as Syntax
+import           System.FilePath                (dropExtension)
 
 type TableNameMap = Map.Map String String
 
 -- | Replace all the occurrence of table names (file names, in many cases) into
--- valid table names in SQL. The table names are calculated based on the file
--- names, keeping its length so that error position stays at the same position
--- after we replace them back to the file names. I take `max 5` to avoid conflict.
+-- valid table names in SQL.
 replaceTableNames :: String -> (String, TableNameMap)
 replaceTableNames qs = (replaceQueryWithTableMap tableMap qs, tableMap)
-  where genTableName xs = take (max 5 (length xs)) $ dropWhile isNumber $ concat $ tail $ iterate sha1Encode xs
+  where genTableName :: String -> String
+        genTableName path =
+          case dropWhile isNumber $ filter isAlphaNum $ dropExtension path of
+            "" -> "empty_name_table"
+            x  -> x
         tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
-
-sha1Encode :: String -> String
-sha1Encode = show . (Crypto.hash :: Char8.ByteString -> Crypto.Digest Crypto.SHA1) . Char8.pack
 
 -- | This function roughly extract the table names. We need this function because
 -- the given query contains the file names so the SQL parser cannot parse.

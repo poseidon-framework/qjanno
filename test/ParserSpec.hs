@@ -19,50 +19,44 @@ replaceTableNamesSpec =
 
     it "should replace the file names with table names" $ do
       let query = "SELECT * FROM ./table0 WHERE c0 > 0"
-      let expected = ("SELECT * FROM d8dc7ec0 WHERE c0 > 0",
-                      Map.fromList [("./table0", "d8dc7ec0")])
+      let expected = ("SELECT * FROM table0 WHERE c0 > 0",
+                      Map.fromList [("./table0", "table0")])
       replaceTableNames query `shouldBe` expected
 
     it "should replace multiple file names with table names" $ do
       let query = "SELECT * FROM ./src/table0.csv\nJOIN /tmp/table1.csv\tON c1 = c2 WHERE c0 > 0"
-      let expected = ("SELECT * FROM d0bf242ceb32ba2b\nJOIN bb239869bdfc764\tON c1 = c2 WHERE c0 > 0",
-                      Map.fromList [("./src/table0.csv", "d0bf242ceb32ba2b"),("/tmp/table1.csv", "bb239869bdfc764")])
+      let expected = ("SELECT * FROM srctable0\nJOIN tmptable1\tON c1 = c2 WHERE c0 > 0",
+                      Map.fromList [("./src/table0.csv", "srctable0"),("/tmp/table1.csv", "tmptable1")])
       replaceTableNames query `shouldBe` expected
 
     it "should replace only the table names" $ do
       let query = "SELECT * FROM ./table0 WHERE c0 LIKE '%foo ./table0 bar%'"
-      let expected = ("SELECT * FROM d8dc7ec0 WHERE c0 LIKE '%foo ./table0 bar%'",
-                      Map.fromList [("./table0", "d8dc7ec0")])
+      let expected = ("SELECT * FROM table0 WHERE c0 LIKE '%foo ./table0 bar%'",
+                      Map.fromList [("./table0", "table0")])
       replaceTableNames query `shouldBe` expected
 
     it "should take care of multi-byte file names correctly" $ do
       let query = "SELECT * FROM ./テスト"
-      let expected = ("SELECT * FROM e4c1e",
-                      Map.fromList [("./テスト", "e4c1e")])
-      replaceTableNames query `shouldBe` expected
-
-    it "should take care of file name whose sha1 hash has only numbers" $ do
-      let query = "SELECT * FROM vdbdc.csv"
-      let expected = ("SELECT * FROM f8ce01ceb",
-                      Map.fromList [("vdbdc.csv", "f8ce01ceb")])
+      let expected = ("SELECT * FROM テスト",
+                      Map.fromList [("./テスト", "テスト")])
       replaceTableNames query `shouldBe` expected
 
     it "should not replace inside single quotes" $ do
       let query = "SELECT * FROM table0.csv WHERE c0 LIKE '%foo FROM table1.csv bar%'"
-      let expected = ("SELECT * FROM ec0f6d989c WHERE c0 LIKE '%foo FROM table1.csv bar%'",
-                      Map.fromList [("table0.csv", "ec0f6d989c")])
+      let expected = ("SELECT * FROM table0 WHERE c0 LIKE '%foo FROM table1.csv bar%'",
+                      Map.fromList [("table0.csv", "table0")])
       replaceTableNames query `shouldBe` expected
 
     it "should not replace inside double quotes" $ do
       let query = "SELECT * FROM table0.csv WHERE c0 LIKE \"%foo FROM table0.csv bar%\""
-      let expected = ("SELECT * FROM ec0f6d989c WHERE c0 LIKE \"%foo FROM table0.csv bar%\"",
-                      Map.fromList [("table0.csv", "ec0f6d989c")])
+      let expected = ("SELECT * FROM table0 WHERE c0 LIKE \"%foo FROM table0.csv bar%\"",
+                      Map.fromList [("table0.csv", "table0")])
       replaceTableNames query `shouldBe` expected
 
     it "should replace the file name containing spaces" $ do
       let query = "SELECT * FROM `foo/bar baz qux/quux.csv`"
-      let expected = ("SELECT * FROM a3ecf94bae7d224b52e9ad3df3",
-                      Map.fromList [("`foo/bar baz qux/quux.csv`", "a3ecf94bae7d224b52e9ad3df3")])
+      let expected = ("SELECT * FROM foobarbazquxquux",
+                      Map.fromList [("`foo/bar baz qux/quux.csv`", "foobarbazquxquux")])
       replaceTableNames query `shouldBe` expected
 
 roughlyExtractTableNamesSpec :: Spec

@@ -25,9 +25,7 @@ executable qjanno
                       , Paths_qjanno
                       , Janno
   build-depends:        base >= 4.9 && < 5
-                      , bytestring
                       , containers
-                      , cryptonite
                       , optparse-applicative
                       , simple-sql-parser >= 0.6.0
                       , split
@@ -55,9 +53,7 @@ test-suite spec
   type:                 exitcode-stdio-1.0
   default-language:     Haskell2010
   build-depends:        base >= 4.9 && < 5
-                      , bytestring
                       , containers
-                      , cryptonite
                       , hspec
                       , optparse-applicative
                       , process
@@ -66,6 +62,7 @@ test-suite spec
                       , sqlite-simple
                       , syb >= 0.4
                       , text
+                      , filepath
 
 source-repository head
   type:     git

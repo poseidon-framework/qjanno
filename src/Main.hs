@@ -54,8 +54,8 @@ runQuery opts conn (query, tableMap) = do
   if Option.showColumns opts
   then do
       -- just show columns
-      let columnOverviewTransformed = concat $ map (\(p, cs) -> map (\c -> [c, p]) cs) columnOverview
-      printTable ["Column", "Path"] columnOverviewTransformed
+      let columnOverviewRowwise = concatMap (\(p, cs) -> map (compileColTableRow p) cs) columnOverview
+      printTable ["Column", "Path", "qjanno Table name"] columnOverviewRowwise
   else do
       -- run regular query
       ret <- SQL.execute conn query
@@ -66,6 +66,8 @@ runQuery opts conn (query, tableMap) = do
               hPutStrLn stderr err
               exitFailure
   where
+      compileColTableRow :: String -> String -> [String]
+      compileColTableRow p c = [c, p, fromMaybe "" $ Map.lookup p tableMap]
       printTable :: [String] -> [[String]] -> IO ()
       printTable tableH tableB = do
           if Option.outputRaw opts
