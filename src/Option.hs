@@ -22,9 +22,9 @@ options :: Parser Option
 options = Option
   <$> optional (argument str (
        metavar "QUERY"
-    <> help "MYSQL syntax query with paths to files for table names. \
+    <> help "SQLite syntax query with paths to files for table names. \
             \See the online documentation for examples. \
-            \The special table name syntax 'd(path1,path2,...)'' treats the paths (path1, path2, ...) \
+            \The special table name syntax 'd(path1,path2,...)' treats the paths (path1, path2, ...) \
             \as base directories where .janno files are searched recursively. \
             \All detected .janno files are merged into one table and can thus be \
             \subjected to arbitrary queries."))
