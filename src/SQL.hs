@@ -33,7 +33,7 @@ insertRow conn name columns types entry = do
            ++ " VALUES " ++ tupled (map quote (zip types entry)) ++ ";"
   e <- try $ SQLite.execute_ conn (fromString stmt)
   return $ either (Just . (show :: SomeException -> String)) (const Nothing) e
-    where quote (t, "") | isDigitType t = "NULL"
+    where quote (_, "") = "NULL" -- qhs has: isDigitType t = "NULL" to treat empty strings as "", not NULL
           quote (t, cs) | isDigitType t = cs
                         | otherwise = "'" ++ toSQLString cs ++ "'"
           isDigitType SQLInt = True
