@@ -1,1 +1,1 @@
-- V 0.1.0: Initial version: Fork of qsh with basic adjustments to directly incorporate .janno files.
+- V 1.0.0: Initial version: Fork of qsh with adjustments to directly incorporate .janno files.
