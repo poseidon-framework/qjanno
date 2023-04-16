@@ -26,13 +26,11 @@ library
                       , containers
                       , optparse-applicative
                       , simple-sql-parser >= 0.6.0
-                      , split
                       , sqlite-simple
                       , syb >= 0.4
                       , text
                       , directory
                       , filepath
-                      , table-layout
 
 executable qjanno
   hs-source-dirs:       src-executables
@@ -43,13 +41,7 @@ executable qjanno
                       , qjanno-hs
                       , containers
                       , optparse-applicative
-                      , simple-sql-parser >= 0.6.0
-                      , split
                       , sqlite-simple
-                      , syb >= 0.4
-                      , text
-                      , directory
-                      , filepath
                       , table-layout
   other-modules:        Paths_qjanno_hs
 
@@ -66,14 +58,7 @@ test-suite spec
                       , qjanno-hs
                       , containers
                       , hspec
-                      , optparse-applicative
                       , process
-                      , simple-sql-parser >= 0.6.0
-                      , split
-                      , sqlite-simple
-                      , syb >= 0.4
-                      , text
-                      , filepath
 
 source-repository head
   type:     git
