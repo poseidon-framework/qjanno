@@ -1,4 +1,4 @@
-module SQLType (SQLType(..), showType, Any, fromColumnsAndEntries) where
+module Qjanno.SQLType (SQLType(..), showType, Any, fromColumnsAndEntries) where
 
 import           Data.String                      (IsString (..))
 import qualified Data.Text                        as T

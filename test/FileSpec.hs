@@ -1,11 +1,11 @@
 module FileSpec (spec) where
 
-import           Data.Char  (isSpace)
+import           Data.Char     (isSpace)
 import           System.IO
-import           Test.Hspec (Spec, describe, it, shouldBe, shouldReturn)
+import           Test.Hspec    (Spec, describe, it, shouldBe, shouldReturn)
 
-import           File
-import           Option
+import           Qjanno.File
+import           Qjanno.Option
 
 spec :: Spec
 spec = do

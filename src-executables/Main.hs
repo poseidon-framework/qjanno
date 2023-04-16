@@ -16,16 +16,16 @@ import           System.IO
 import           Text.Layout.Table                 (asciiRoundS, column, def,
                                                     expandUntil, rowsG,
                                                     tableString, titlesH)
+import           Text.Layout.Table.Spec.HeaderSpec (HeaderSpec (..))
 import           Text.Read                         (readMaybe)
 
-import qualified File                              as File
-import qualified Janno                             as Janno
-import qualified Option                            as Option
-import qualified Parser                            as Parser
-import           Paths_qjanno                      (version)
-import qualified SQL                               as SQL
-import qualified SQLType                           as SQLType
-import           Text.Layout.Table.Spec.HeaderSpec (HeaderSpec (..))
+import           Paths_qjanno_hs                   (version)
+import qualified Qjanno.File                       as File
+import qualified Qjanno.Janno                      as Janno
+import qualified Qjanno.Option                     as Option
+import qualified Qjanno.Parser                     as Parser
+import qualified Qjanno.SQL                        as SQL
+import qualified Qjanno.SQLType                    as SQLType
 
 main :: IO ()
 main = do

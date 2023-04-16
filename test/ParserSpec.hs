@@ -1,10 +1,10 @@
 module ParserSpec (spec) where
 
 import           Data.Either
-import qualified Data.Map    as Map
-import           Test.Hspec  (Spec, describe, it, shouldBe, shouldSatisfy)
+import qualified Data.Map      as Map
+import           Test.Hspec    (Spec, describe, it, shouldBe, shouldSatisfy)
 
-import           Parser
+import           Qjanno.Parser
 
 spec :: Spec
 spec = do

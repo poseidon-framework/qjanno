@@ -1,4 +1,4 @@
-module Parser (replaceTableNames, roughlyExtractTableNames, replaceBackTableNames, extractTableNames, errorString, TableNameMap) where
+module Qjanno.Parser (replaceTableNames, roughlyExtractTableNames, replaceBackTableNames, extractTableNames, errorString, TableNameMap) where
 
 import           Data.Char                      (isAlphaNum, isNumber, isSpace,
                                                  toUpper)

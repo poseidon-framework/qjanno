@@ -1,4 +1,4 @@
-module File where
+module Qjanno.File where
 
 import           Control.Applicative ((<|>))
 import           Control.Monad       (guard, when)
@@ -6,7 +6,7 @@ import           Data.Char           (isSpace)
 import           System.Exit         (exitFailure)
 import           System.IO
 
-import qualified Option              as Option
+import qualified Qjanno.Option       as Option
 
 readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
 readFromFile opts handle = do

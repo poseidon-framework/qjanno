@@ -1,5 +1,5 @@
-name:                   qjanno
-version:                1.0.0
+name:                   qjanno-hs
+version:                1.0.1
 author:                 itchyny <https://github.com/itchyny>, Clemens Schmid
 maintainer:             Clemens Schmid <clemens@nevrome.de>
 license:                MIT
@@ -12,18 +12,16 @@ description:            This is an adjusted version and fork of the qsh package 
 extra-source-files:     README.md,
                         CHANGELOG.md
 
-executable qjanno
+library
   hs-source-dirs:       src
-  main-is:              Main.hs
-  ghc-options:          -threaded -Wall
+  exposed-modules:      Qjanno.Parser
+                      , Qjanno.SQL
+                      , Qjanno.SQLType
+                      , Qjanno.File
+                      , Qjanno.Option
+                      , Qjanno.Janno
+  other-modules:        Paths_qjanno_hs
   default-language:     Haskell2010
-  other-modules:        Parser
-                      , SQL
-                      , SQLType
-                      , File
-                      , Option
-                      , Paths_qjanno
-                      , Janno
   build-depends:        base >= 4.9 && < 5
                       , containers
                       , optparse-applicative
@@ -36,23 +34,36 @@ executable qjanno
                       , filepath
                       , table-layout
 
-test-suite spec
-  hs-source-dirs:       test,src
-  main-is:              Spec.hs
+executable qjanno
+  hs-source-dirs:       src-executables
+  main-is:              Main.hs
   ghc-options:          -threaded -Wall
-  other-modules:        Parser
-                      , SQL
-                      , SQLType
-                      , File
-                      , Option
-                      , Paths_qjanno
-                      , ParserSpec
+  default-language:     Haskell2010
+  build-depends:        base >= 4.9 && < 5
+                      , qjanno-hs
+                      , containers
+                      , optparse-applicative
+                      , simple-sql-parser >= 0.6.0
+                      , split
+                      , sqlite-simple
+                      , syb >= 0.4
+                      , text
+                      , directory
+                      , filepath
+                      , table-layout
+  other-modules:        Paths_qjanno_hs
+
+test-suite spec
+  hs-source-dirs:       test
+  main-is:              Spec.hs
+  other-modules:        ParserSpec
                       , SQLSpec
                       , FileSpec
                       , MainSpec
   type:                 exitcode-stdio-1.0
   default-language:     Haskell2010
   build-depends:        base >= 4.9 && < 5
+                      , qjanno-hs
                       , containers
                       , hspec
                       , optparse-applicative

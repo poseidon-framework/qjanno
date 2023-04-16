@@ -1,1 +1,2 @@
+- V 1.0.1: Structural refactoring: To get a proper test coverage report it was necessary to split library, executable and test code. No user-facing changes in qjanno.
 - V 1.0.0: Initial version: Fork of qsh with adjustments to directly incorporate .janno files.

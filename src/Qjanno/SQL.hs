@@ -1,4 +1,4 @@
-module SQL (open, close, createTable, insertRow, execute) where
+module Qjanno.SQL (open, close, createTable, insertRow, execute) where
 
 import           Control.Exception      (SomeException, try)
 import           Control.Monad          (forM)
@@ -7,7 +7,7 @@ import           Data.String            (fromString)
 import qualified Data.Text              as T
 import qualified Database.SQLite.Simple as SQLite
 
-import           SQLType
+import           Qjanno.SQLType
 
 -- | Open a new database connection.
 open :: String -> IO SQLite.Connection

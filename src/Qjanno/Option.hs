@@ -1,9 +1,9 @@
-module Option where
+module Qjanno.Option where
 
 import           Data.Version        (showVersion)
 import           Options.Applicative
 
-import qualified Paths_qjanno        as QJANNO
+import qualified Paths_qjanno_hs     as QJANNO
 
 -- | Command options
 data Option = Option {

@@ -1,4 +1,4 @@
-module Janno where
+module Qjanno.Janno where
 
 import           Control.Monad    (filterM)
 import           Data.Char        (isSpace)
