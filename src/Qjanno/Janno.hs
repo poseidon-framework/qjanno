@@ -11,7 +11,7 @@ import           Data.List        (transpose)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           System.Directory (doesDirectoryExist, listDirectory)
-import           System.FilePath  (takeExtension, takeFileName, (</>))
+import           System.FilePath  (takeExtension, takeFileName, (</>), takeDirectory)
 import Data.Version (Version)
 import           Data.Aeson                 (FromJSON, withObject, parseJSON,
                                              (.:), (.:?))
@@ -38,20 +38,21 @@ findJannoPaths j = do
             return ["test1"]
         Parser.ViaAllPackages ps -> do
             ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
-            hu <- mapM decodeFileEither ymlPaths
-            let ymlFilesAndPaths = zip ymlPaths hu
-            mapM_ (hPutStrLn stderr . show) $ lefts hu
-            let gu = map getJannoPath $ rights hu
-            mapM_ (hPutStrLn stderr) $ lefts gu
-            return $ rights gu
+            errOrJannoPath <- mapM getAbsJannoPath ymlPaths
+            mapM_ (hPutStrLn stderr) $ lefts errOrJannoPath
+            return $ rights errOrJannoPath
         Parser.DirectJannoFiles ps -> do
             concat <$> mapM findAllJannoFiles ps
     where
-        getAbsJannoPath :: PoseidonYml -> Either String FilePath
-        getAbsJannoPath yml =
-            case _posYamlJannoFile yml of
-                Nothing -> Left "mist"
-                Just x -> Right x
+        getAbsJannoPath :: FilePath -> IO (Either String FilePath)
+        getAbsJannoPath ymlPath = do
+            eitherYml <- decodeFileEither ymlPath
+            case eitherYml of
+                Left e    -> return $ Left $ ymlPath ++ ": " ++ show e
+                Right yml ->
+                    case _posYamlJannoFile yml of
+                        Nothing -> return $ Left $ ymlPath ++ ": No .janno file linked"
+                        Just x  -> return $ Right $ takeDirectory ymlPath </> x
 
 
 extractBaseDirs :: String -> [FilePath]
