@@ -40,9 +40,9 @@ readFROM s =
         Right x  -> Right x
     where
         parseFROMString :: P.Parser FROM
-        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> (AnyFile <$> P.many1 P.alphaNum)
+        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> (AnyFile <$> P.many1 P.anyChar)
         parseJannos :: P.Parser [JannosFROM]
-        parseJannos = 
+        parseJannos =
             P.sepBy1
             (P.try parseViaLatestPackages P.<|> P.try parseViaAllPackages P.<|> P.try parseDirectJannoFiles)
             consumeCommaSep

@@ -123,16 +123,15 @@ readFilesCreateTables opts conn tableMap = do
             hPutStrLn stderr "Invalid FROM string: "
             hPutStrLn stderr s
             exitFailure
-        Right (Parser.Jannos _) -> do
-          let baseDirs = Janno.extractBaseDirs path'
-          allJannoPaths <- concat <$> mapM Janno.findAllJannoFiles baseDirs
-          let jannoOpts = opts {Option.tabDelimited = True}
-          allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
-          allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
-          let (columns, body) = Janno.mergeJannos allJannos
-          createTable conn name path columns body
-          -- returns all columns for the --showColumns feature
-          return (path, columns)
+        Right (Parser.Jannos j) -> do
+            allJannoPaths <- concat <$> mapM Janno.findJannoPaths j
+            let jannoOpts = opts {Option.tabDelimited = True}
+            allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
+            allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
+            let (columns, body) = Janno.mergeJannos allJannos
+            createTable conn name path columns body
+            -- returns all columns for the --showColumns feature
+            return (path, columns)
         Right (Parser.AnyFile _) -> do
           handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
           (columns, body) <- File.readFromFile opts handle

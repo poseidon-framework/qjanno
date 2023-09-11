@@ -1,5 +1,7 @@
 module Qjanno.Janno where
 
+import qualified Qjanno.Parser                     as Parser
+
 import           Control.Monad    (filterM)
 import           Data.Char        (isSpace)
 import           Data.Foldable    (foldl')
@@ -8,6 +10,17 @@ import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath  (takeExtension, takeFileName, (</>))
+
+findJannoPaths :: Parser.JannosFROM -> IO [FilePath]
+findJannoPaths j = do
+    case j of
+        Parser.ViaLatestPackages ps -> do
+            ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
+            return ["test1"]
+        Parser.ViaAllPackages _ -> do
+            return ["test2"]
+        Parser.DirectJannoFiles ps -> do
+            concat <$> mapM findAllJannoFiles ps
 
 extractBaseDirs :: String -> [FilePath]
 extractBaseDirs baseDirsString =
@@ -24,10 +37,16 @@ extractBaseDirs baseDirsString =
         trimWS :: String -> String
         trimWS = f . f where f = reverse . dropWhile isSpace
 
+findAllPOSEIDONymlFiles :: FilePath -> IO [FilePath]
+findAllPOSEIDONymlFiles = findAllFilesByPredicate (== "POSEIDON.yml")
+
 findAllJannoFiles :: FilePath -> IO [FilePath]
-findAllJannoFiles baseDir = do
+findAllJannoFiles = findAllFilesByPredicate (\p -> takeExtension p == ".janno")
+
+findAllFilesByPredicate :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
+findAllFilesByPredicate predicate baseDir = do
     entries <- listDirectory baseDir
-    let files = map (baseDir </>) $ filter (\p -> takeExtension p == ".janno") $ map takeFileName entries
+    let files = map (baseDir </>) $ filter predicate $ map takeFileName entries
     subDirs <- filterM doesDirectoryExist . map (baseDir </>) $ entries
     moreFiles <- fmap concat . mapM findAllJannoFiles $ subDirs
     return $ files ++ moreFiles
