@@ -2,21 +2,21 @@
 
 module Qjanno.Janno where
 
-import qualified Qjanno.Parser                     as Parser
+import qualified Qjanno.Parser    as Parser
 
 import           Control.Monad    (filterM)
+import           Data.Aeson       (FromJSON, parseJSON, withObject, (.:), (.:?))
+import           Data.Either      (lefts, rights)
 import           Data.Foldable    (foldl')
-import           Data.List        (transpose, sortBy, groupBy)
+import           Data.List        (groupBy, sortBy, transpose)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
+import           Data.Version     (Version)
+import           Data.Yaml        (decodeFileEither)
 import           System.Directory (doesDirectoryExist, listDirectory)
-import           System.FilePath  (takeExtension, takeFileName, (</>), takeDirectory)
-import Data.Version (Version)
-import           Data.Aeson                 (FromJSON, withObject, parseJSON,
-                                             (.:), (.:?))
-import System.IO
-import Data.Yaml (decodeFileEither)
-import Data.Either (lefts, rights)
+import           System.FilePath  (takeDirectory, takeExtension, takeFileName,
+                                   (</>))
+import           System.IO
 
 data PoseidonYml = PoseidonYml
     { _posYmlPackageTite    :: String

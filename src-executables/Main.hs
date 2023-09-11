@@ -25,7 +25,7 @@ import qualified Qjanno.Option                     as Option
 import qualified Qjanno.Parser                     as Parser
 import qualified Qjanno.SQL                        as SQL
 import qualified Qjanno.SQLType                    as SQLType
-import System.Directory (doesFileExist)
+import           System.Directory                  (doesFileExist)
 
 main :: IO ()
 main = do

@@ -20,9 +20,9 @@ import qualified Language.SQL.SimpleSQL.Dialect as Dialect
 import qualified Language.SQL.SimpleSQL.Parse   as Parse
 import qualified Language.SQL.SimpleSQL.Syntax  as Syntax
 import           System.FilePath                (dropExtension)
-import qualified Text.Parsec              as P
-import qualified Text.Parsec.Error        as P
-import qualified Text.Parsec.String       as P
+import qualified Text.Parsec                    as P
+import qualified Text.Parsec.Error              as P
+import qualified Text.Parsec.String             as P
 
 data FROM =
       AnyFile FilePath
@@ -86,10 +86,10 @@ type TableNameMap = Map.Map String String
 -- | Replace all the occurrence of table names (file names, in many cases) into
 -- valid table names in SQL.
 replaceTableNames :: String -> (String, TableNameMap)
-replaceTableNames qs = 
+replaceTableNames qs =
     let tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
     in (replaceQueryWithTableMap tableMap qs, tableMap)
-    where 
+    where
         genTableName :: String -> String
         genTableName path =
           case dropWhile isNumber $ filter isAlphaNum $ dropExtension path of
