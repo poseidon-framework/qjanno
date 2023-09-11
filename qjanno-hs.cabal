@@ -46,6 +46,7 @@ executable qjanno
                       , optparse-applicative
                       , sqlite-simple
                       , table-layout
+                      , directory
   other-modules:        Paths_qjanno_hs
 
 test-suite spec

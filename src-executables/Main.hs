@@ -25,6 +25,7 @@ import qualified Qjanno.Option                     as Option
 import qualified Qjanno.Parser                     as Parser
 import qualified Qjanno.SQL                        as SQL
 import qualified Qjanno.SQLType                    as SQLType
+import System.Directory (doesFileExist)
 
 main :: IO ()
 main = do
@@ -125,6 +126,14 @@ readFilesCreateTables opts conn tableMap = do
             exitFailure
         Right (Parser.Jannos j) -> do
             allJannoPaths <- concat <$> mapM Janno.findJannoPaths j
+            when (null allJannoPaths) $ do
+                hPutStrLn stderr "No .janno files found"
+                exitFailure
+            forM_ allJannoPaths $ \p -> do
+                fileExists <- doesFileExist p
+                unless fileExists $ do
+                    hPutStrLn stderr $ "File expected, but does not exist: " ++ p
+                    exitFailure
             let jannoOpts = opts {Option.tabDelimited = True}
             allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
             allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
@@ -133,20 +142,24 @@ readFilesCreateTables opts conn tableMap = do
             -- returns all columns for the --showColumns feature
             return (path, columns)
         Right (Parser.AnyFile _) -> do
-          handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
-          (columns, body) <- File.readFromFile opts handle
-          when (length columns == 0) $ do
-            hPutStrLn stderr $ if Option.noHeader opts
+            fileExists <- doesFileExist path'
+            unless fileExists $ do
+                hPutStrLn stderr $ "File does not exist: " ++ path'
+                exitFailure
+            handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
+            (columns, body) <- File.readFromFile opts handle
+            when (length columns == 0) $ do
+                hPutStrLn stderr $ if Option.noHeader opts
                                   then "Warning - data is empty"
                                   else "Header line is expected but missing in file " ++ path
-            exitFailure
-          when (any (elem ',') columns) $ do
-            hPutStrLn stderr "Column name cannot contain commas"
-            exitFailure
-          when (length columns >= 1) $
-            createTable conn name path columns body
-          hClose handle
-          return (path, columns)
+                exitFailure
+            when (any (elem ',') columns) $ do
+                hPutStrLn stderr "Column name cannot contain commas"
+                exitFailure
+            when (length columns >= 1) $
+                createTable conn name path columns body
+            hClose handle
+            return (path, columns)
   where unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
         unquote xs = xs
 

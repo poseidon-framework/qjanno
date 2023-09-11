@@ -86,13 +86,15 @@ type TableNameMap = Map.Map String String
 -- | Replace all the occurrence of table names (file names, in many cases) into
 -- valid table names in SQL.
 replaceTableNames :: String -> (String, TableNameMap)
-replaceTableNames qs = (replaceQueryWithTableMap tableMap qs, tableMap)
-  where genTableName :: String -> String
+replaceTableNames qs = 
+    let tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
+    in (replaceQueryWithTableMap tableMap qs, tableMap)
+    where 
+        genTableName :: String -> String
         genTableName path =
           case dropWhile isNumber $ filter isAlphaNum $ dropExtension path of
             "" -> "empty_name_table"
             x  -> x
-        tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
 
 -- | This function roughly extract the table names. We need this function because
 -- the given query contains the file names so the SQL parser cannot parse.
