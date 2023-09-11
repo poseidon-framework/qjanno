@@ -5,9 +5,8 @@ module Qjanno.Janno where
 import qualified Qjanno.Parser                     as Parser
 
 import           Control.Monad    (filterM)
-import           Data.Char        (isSpace)
 import           Data.Foldable    (foldl')
-import           Data.List        (transpose)
+import           Data.List        (transpose, sortBy, groupBy)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           System.Directory (doesDirectoryExist, listDirectory)
@@ -34,55 +33,53 @@ instance FromJSON PoseidonYml where
 findJannoPaths :: Parser.JannosFROM -> IO [FilePath]
 findJannoPaths j = do
     case j of
-        Parser.ViaLatestPackages _ -> do
-            return ["test1"]
+        Parser.ViaLatestPackages ps -> do
+            ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
+            eitherYmlFiles <- mapM readYmlFile ymlPaths
+            mapM_ (hPutStrLn stderr) $ lefts eitherYmlFiles
+            let lastVersions = filterToLastPackageVersion $ rights eitherYmlFiles
+            eitherJannoPath <- mapM getAbsJannoPath $ lastVersions
+            mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
+            return $ rights eitherJannoPath
         Parser.ViaAllPackages ps -> do
             ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
-            errOrJannoPath <- mapM getAbsJannoPath ymlPaths
-            mapM_ (hPutStrLn stderr) $ lefts errOrJannoPath
-            return $ rights errOrJannoPath
+            eitherYmlFiles <- mapM readYmlFile ymlPaths
+            mapM_ (hPutStrLn stderr) $ lefts eitherYmlFiles
+            eitherJannoPath <- mapM getAbsJannoPath $ rights eitherYmlFiles
+            mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
+            return $ rights eitherJannoPath
         Parser.DirectJannoFiles ps -> do
             concat <$> mapM findAllJannoFiles ps
     where
-        getAbsJannoPath :: FilePath -> IO (Either String FilePath)
-        getAbsJannoPath ymlPath = do
+        findAllPOSEIDONymlFiles :: FilePath -> IO [FilePath]
+        findAllPOSEIDONymlFiles = findAllFilesByPredicate (== "POSEIDON.yml")
+        findAllJannoFiles :: FilePath -> IO [FilePath]
+        findAllJannoFiles = findAllFilesByPredicate (\p -> takeExtension p == ".janno")
+        findAllFilesByPredicate :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
+        findAllFilesByPredicate predicate baseDir = do
+            entries <- listDirectory baseDir
+            let files = map (baseDir </>) $ filter predicate $ map takeFileName entries
+            subDirs <- filterM doesDirectoryExist . map (baseDir </>) $ entries
+            moreFiles <- fmap concat . mapM findAllJannoFiles $ subDirs
+            return $ files ++ moreFiles
+        readYmlFile :: FilePath -> IO (Either String (FilePath, PoseidonYml))
+        readYmlFile ymlPath = do
             eitherYml <- decodeFileEither ymlPath
             case eitherYml of
                 Left e    -> return $ Left $ ymlPath ++ ": " ++ show e
-                Right yml ->
-                    case _posYamlJannoFile yml of
-                        Nothing -> return $ Left $ ymlPath ++ ": No .janno file linked"
-                        Just x  -> return $ Right $ takeDirectory ymlPath </> x
-
-
-extractBaseDirs :: String -> [FilePath]
-extractBaseDirs baseDirsString =
-    map trimWS $ splitDirs $ removeFrame baseDirsString
-    where
-        removeFrame :: String -> String
-        removeFrame s = reverse $ drop 1 $ reverse $ drop 2 s
-        splitDirs :: String -> [String]
-        splitDirs s =
-            let p = (==',')
-            in case dropWhile p s of
-              "" -> []
-              s' -> w : splitDirs s'' where (w, s'') = break p s'
-        trimWS :: String -> String
-        trimWS = f . f where f = reverse . dropWhile isSpace
-
-findAllPOSEIDONymlFiles :: FilePath -> IO [FilePath]
-findAllPOSEIDONymlFiles = findAllFilesByPredicate (== "POSEIDON.yml")
-
-findAllJannoFiles :: FilePath -> IO [FilePath]
-findAllJannoFiles = findAllFilesByPredicate (\p -> takeExtension p == ".janno")
-
-findAllFilesByPredicate :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
-findAllFilesByPredicate predicate baseDir = do
-    entries <- listDirectory baseDir
-    let files = map (baseDir </>) $ filter predicate $ map takeFileName entries
-    subDirs <- filterM doesDirectoryExist . map (baseDir </>) $ entries
-    moreFiles <- fmap concat . mapM findAllJannoFiles $ subDirs
-    return $ files ++ moreFiles
+                Right yml -> return $ Right (ymlPath, yml)
+        filterToLastPackageVersion :: [(FilePath, PoseidonYml)] -> [(FilePath, PoseidonYml)]
+        filterToLastPackageVersion ymlsWithPath =
+            let ordfunc  (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = compare (t1, v1) (t2, v2)
+                compfunc (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = (t1, v1) == (t2, v2)
+            in case ymlsWithPath of
+                [] -> []
+                xs -> last $ groupBy compfunc $ sortBy ordfunc xs
+        getAbsJannoPath :: (FilePath, PoseidonYml) -> IO (Either String FilePath)
+        getAbsJannoPath (ymlPath, ymlFile) = do
+            case _posYamlJannoFile ymlFile of
+                Nothing -> return $ Left $ ymlPath ++ ": No .janno file linked"
+                Just x  -> return $ Right $ takeDirectory ymlPath </> x
 
 mergeJannos :: [([String], [[String]])] -> ([String], [[String]])
 mergeJannos xs =
