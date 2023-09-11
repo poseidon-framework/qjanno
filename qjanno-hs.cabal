@@ -32,6 +32,8 @@ library
                       , directory
                       , filepath
                       , parsec
+                      , aeson
+                      , yaml
 
 executable qjanno
   hs-source-dirs:       src-executables

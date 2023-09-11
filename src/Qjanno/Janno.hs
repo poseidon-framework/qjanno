@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Qjanno.Janno where
 
 import qualified Qjanno.Parser                     as Parser
@@ -10,17 +12,47 @@ import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           System.Directory (doesDirectoryExist, listDirectory)
 import           System.FilePath  (takeExtension, takeFileName, (</>))
+import Data.Version (Version)
+import           Data.Aeson                 (FromJSON, withObject, parseJSON,
+                                             (.:), (.:?))
+import System.IO
+import Data.Yaml (decodeFileEither)
+import Data.Either (lefts, rights)
+
+data PoseidonYml = PoseidonYml
+    { _posYmlPackageTite    :: String
+    , _posYmlPackageVersion :: Maybe Version
+    , _posYamlJannoFile     :: Maybe FilePath
+    } deriving Show
+
+instance FromJSON PoseidonYml where
+    parseJSON = withObject "PoseidonYml" $ \v -> PoseidonYml
+        <$> v .:   "title"
+        <*> v .:?  "packageVersion"
+        <*> v .:?  "jannoFile"
 
 findJannoPaths :: Parser.JannosFROM -> IO [FilePath]
 findJannoPaths j = do
     case j of
-        Parser.ViaLatestPackages ps -> do
-            ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
+        Parser.ViaLatestPackages _ -> do
             return ["test1"]
-        Parser.ViaAllPackages _ -> do
-            return ["test2"]
+        Parser.ViaAllPackages ps -> do
+            ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
+            hu <- mapM decodeFileEither ymlPaths
+            let ymlFilesAndPaths = zip ymlPaths hu
+            mapM_ (hPutStrLn stderr . show) $ lefts hu
+            let gu = map getJannoPath $ rights hu
+            mapM_ (hPutStrLn stderr) $ lefts gu
+            return $ rights gu
         Parser.DirectJannoFiles ps -> do
             concat <$> mapM findAllJannoFiles ps
+    where
+        getAbsJannoPath :: PoseidonYml -> Either String FilePath
+        getAbsJannoPath yml =
+            case _posYamlJannoFile yml of
+                Nothing -> Left "mist"
+                Just x -> Right x
+
 
 extractBaseDirs :: String -> [FilePath]
 extractBaseDirs baseDirsString =
