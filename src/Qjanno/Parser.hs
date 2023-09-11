@@ -1,4 +1,12 @@
-module Qjanno.Parser (replaceTableNames, roughlyExtractTableNames, replaceBackTableNames, extractTableNames, errorString, TableNameMap) where
+module Qjanno.Parser (
+    replaceTableNames,
+    roughlyExtractTableNames,
+    replaceBackTableNames,
+    extractTableNames,
+    errorString,
+    TableNameMap,
+    readFROM
+) where
 
 import           Data.Char                      (isAlphaNum, isNumber, isSpace,
                                                  toUpper)
@@ -10,6 +18,66 @@ import qualified Language.SQL.SimpleSQL.Dialect as Dialect
 import qualified Language.SQL.SimpleSQL.Parse   as Parse
 import qualified Language.SQL.SimpleSQL.Syntax  as Syntax
 import           System.FilePath                (dropExtension)
+import qualified Text.Parsec              as P
+import qualified Text.Parsec.Error        as P
+import qualified Text.Parsec.String       as P
+
+data FROM =
+      AnyFile FilePath
+    | Jannos [JannosFROM]
+
+data JannosFROM =
+      ViaLatestPackages [FilePath]
+    | ViaAllPackages [FilePath]
+    | DirectJannoFiles [FilePath]
+
+readFROM :: String -> Either String FROM
+readFROM s =
+    case P.runParser parseFROMString () "" s of
+        Left err -> Left $ showParsecErr err
+        Right x  -> Right x
+    where
+        parseFROMString :: P.Parser FROM
+        parseFROMString = P.try parseJannos P.<|> (AnyFile <$> P.many1 P.alphaNum)
+        parseJannos :: P.Parser FROM
+        parseJannos = Jannos <$>
+            P.sepBy1
+            (P.try parseViaLatestPackages P.<|> P.try parseViaAllPackages P.<|> P.try parseDirectJannoFiles)
+            consumeCommaSep
+        parseViaLatestPackages :: P.Parser JannosFROM
+        parseViaLatestPackages = do
+            _ <- P.string "d("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ ViaLatestPackages paths
+        parseViaAllPackages :: P.Parser JannosFROM
+        parseViaAllPackages = do
+            _ <- P.string "da("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ ViaAllPackages paths
+        parseDirectJannoFiles :: P.Parser JannosFROM
+        parseDirectJannoFiles = do
+            _ <- P.string "j("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ DirectJannoFiles paths
+
+parseListOfPaths :: P.Parser [FilePath]
+parseListOfPaths = P.sepBy1 (P.many1 P.alphaNum) consumeCommaSep
+
+consumeCommaSep :: P.Parser ()
+consumeCommaSep = do
+    _ <- P.spaces *> P.char ',' <* P.spaces
+    return ()
+
+showParsecErr :: P.ParseError -> String
+showParsecErr err =
+    P.showErrorMessages
+        "or" "unknown parse error"
+        "expecting" "unexpected" "end of input"
+        (P.errorMessages err)
+
 
 type TableNameMap = Map.Map String String
 

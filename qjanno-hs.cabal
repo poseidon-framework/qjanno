@@ -31,6 +31,7 @@ library
                       , text
                       , directory
                       , filepath
+                      , parsec
 
 executable qjanno
   hs-source-dirs:       src-executables
