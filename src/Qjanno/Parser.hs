@@ -5,7 +5,9 @@ module Qjanno.Parser (
     extractTableNames,
     errorString,
     TableNameMap,
-    readFROM
+    readFROM,
+    FROM (..),
+    JannosFROM (..)
 ) where
 
 import           Data.Char                      (isAlphaNum, isNumber, isSpace,
@@ -38,9 +40,9 @@ readFROM s =
         Right x  -> Right x
     where
         parseFROMString :: P.Parser FROM
-        parseFROMString = P.try parseJannos P.<|> (AnyFile <$> P.many1 P.alphaNum)
-        parseJannos :: P.Parser FROM
-        parseJannos = Jannos <$>
+        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> (AnyFile <$> P.many1 P.alphaNum)
+        parseJannos :: P.Parser [JannosFROM]
+        parseJannos = 
             P.sepBy1
             (P.try parseViaLatestPackages P.<|> P.try parseViaAllPackages P.<|> P.try parseDirectJannoFiles)
             consumeCommaSep
@@ -64,7 +66,7 @@ readFROM s =
             return $ DirectJannoFiles paths
 
 parseListOfPaths :: P.Parser [FilePath]
-parseListOfPaths = P.sepBy1 (P.many1 P.alphaNum) consumeCommaSep
+parseListOfPaths = P.sepBy1 (P.manyTill P.anyChar (P.lookAhead (P.char ',' P.<|> P.char ')'))) consumeCommaSep
 
 consumeCommaSep :: P.Parser ()
 consumeCommaSep = do
