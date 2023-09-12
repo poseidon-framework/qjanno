@@ -24,6 +24,8 @@ import qualified Text.Parsec                    as P
 import qualified Text.Parsec.Error              as P
 import qualified Text.Parsec.String             as P
 
+-- FROM parser
+
 data FROM =
       AnyFile FilePath
     | Jannos [JannosFROM]
@@ -66,7 +68,9 @@ readFROM s =
             return $ DirectJannoFiles paths
 
 parseListOfPaths :: P.Parser [FilePath]
-parseListOfPaths = P.sepBy1 (P.manyTill P.anyChar (P.lookAhead (P.char ',' P.<|> P.char ')'))) consumeCommaSep
+parseListOfPaths = P.sepBy1
+    (P.manyTill P.anyChar (P.lookAhead (P.char ',' P.<|> P.char ')')))
+    consumeCommaSep
 
 consumeCommaSep :: P.Parser ()
 consumeCommaSep = do
@@ -80,6 +84,7 @@ showParsecErr err =
         "expecting" "unexpected" "end of input"
         (P.errorMessages err)
 
+-- fix table names
 
 type TableNameMap = Map.Map String String
 
