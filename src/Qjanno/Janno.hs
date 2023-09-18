@@ -60,7 +60,7 @@ findJannoPaths j = do
             entries <- listDirectory baseDir
             let files = map (baseDir </>) $ filter predicate $ map takeFileName entries
             subDirs <- filterM doesDirectoryExist . map (baseDir </>) $ entries
-            moreFiles <- fmap concat . mapM findAllJannoFiles $ subDirs
+            moreFiles <- fmap concat . mapM (findAllFilesByPredicate predicate) $ subDirs
             return $ files ++ moreFiles
         readYmlFile :: FilePath -> IO (Either String (FilePath, PoseidonYml))
         readYmlFile ymlPath = do

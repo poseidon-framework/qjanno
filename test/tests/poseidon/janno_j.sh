@@ -1,1 +1,1 @@
-qjanno "SELECT Poseidon_ID FROM j(data)"
+qjanno "SELECT count(*) FROM j(data)" --raw --noOutHeader

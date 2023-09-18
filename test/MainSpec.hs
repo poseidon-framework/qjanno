@@ -26,7 +26,7 @@ qjannoSpec =
     runTestScripts "basic" basic_tests
 
     let poseidon_tests = [
-            "janno_j"
+            "janno_j", "janno_da"
             ]
 
     runTestScripts "poseidon" poseidon_tests
