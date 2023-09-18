@@ -1,1 +1,1 @@
-qjanno "SELECT foo,baz FROM 'file containing spaces.csv' WHERE baz <> 'b2'"
+qjanno "SELECT foo,baz FROM 'data/csv/file containing spaces.csv' WHERE baz <> 'b2'"

@@ -1,1 +1,1 @@
-qjanno "SELECT foo,bar,quux FROM multiline.csv LIMIT 1"
+qjanno "SELECT foo,bar,quux FROM data/csv/multiline.csv LIMIT 1"

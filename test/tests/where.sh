@@ -1,1 +1,1 @@
-qjanno "SELECT foo,baz FROM basic.csv WHERE baz <> 'b2'"
+qjanno "SELECT foo,baz FROM data/csv/basic.csv WHERE baz <> 'b2'"

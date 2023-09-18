@@ -1,1 +1,1 @@
-qjanno "SELECT foo||baz FROM big.csv WHERE bar IS NOT NULL"
+qjanno "SELECT foo||baz FROM data/csv/big.csv WHERE bar IS NOT NULL"

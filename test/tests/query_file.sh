@@ -1,1 +1,1 @@
-cat basic.csv | qjanno -q query.sql
+cat data/csv/basic.csv | qjanno -q query.sql

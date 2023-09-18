@@ -1,1 +1,1 @@
-qjanno "SELECT foo||' sep \"double quoted\" bar',baz FROM basic.csv"
+qjanno "SELECT foo||' sep \"double quoted\" bar',baz FROM data/csv/basic.csv"

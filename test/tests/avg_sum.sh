@@ -1,1 +1,1 @@
-qjanno "SELECT avg(bar),sum(bar) FROM basic.csv"
+qjanno "SELECT avg(bar),sum(bar) FROM data/csv/basic.csv"

@@ -26,13 +26,13 @@ readFromFileSpec =
                         outputNoHeader = False }
 
     it "should read from a test file" $ do
-      handle <- openFile "test/tests/basic.csv" ReadMode
+      handle <- openFile "test/tests/data/csv/basic.csv" ReadMode
       let expected = (["foo", "bar", "baz"], [["a0", "1", "a2"], ["b0", "3", "b2"], ["c0", "", "c2"]])
       readFromFile opts handle `shouldReturn` expected
       hClose handle
 
     it "should read from a test file which contains a multiline cell" $ do
-      handle <- openFile "test/tests/multiline.csv" ReadMode
+      handle <- openFile "test/tests/data/csv/multiline.csv" ReadMode
       let expected = (["foo", "bar", "baz", "qux", "quux"], [["a0", "1", "a2\nb0\",3,\"b2\nc0", "", "c2"]])
       readFromFile opts handle `shouldReturn` expected
       hClose handle

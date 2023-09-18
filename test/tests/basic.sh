@@ -1,1 +1,1 @@
-qjanno "SELECT * FROM basic.csv"
+qjanno "SELECT * FROM data/csv/basic.csv"

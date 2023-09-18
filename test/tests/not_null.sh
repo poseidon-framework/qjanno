@@ -1,1 +1,1 @@
-qjanno "SELECT * FROM basic.csv WHERE bar IS NOT NULL"
+qjanno "SELECT * FROM data/csv/basic.csv WHERE bar IS NOT NULL"

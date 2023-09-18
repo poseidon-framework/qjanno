@@ -1,1 +1,1 @@
-qjanno "SELECT sum(bar) FROM basic.csv" --raw --noOutHeader
+qjanno "SELECT sum(bar) FROM data/csv/basic.csv" --raw --noOutHeader
