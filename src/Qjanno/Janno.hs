@@ -38,7 +38,7 @@ findJannoPaths j = do
             eitherYmlFiles <- mapM readYmlFile ymlPaths
             mapM_ (hPutStrLn stderr) $ lefts eitherYmlFiles
             let lastVersions = filterToLastPackageVersion $ rights eitherYmlFiles
-            eitherJannoPath <- mapM getAbsJannoPath $ lastVersions
+            eitherJannoPath <- mapM getAbsJannoPath lastVersions
             mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
             return $ rights eitherJannoPath
         Parser.ViaAllPackages ps -> do
@@ -70,11 +70,12 @@ findJannoPaths j = do
                 Right yml -> return $ Right (ymlPath, yml)
         filterToLastPackageVersion :: [(FilePath, PoseidonYml)] -> [(FilePath, PoseidonYml)]
         filterToLastPackageVersion ymlsWithPath =
-            let ordfunc  (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = compare (t1, v1) (t2, v2)
-                compfunc (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = (t1, v1) == (t2, v2)
-            in case ymlsWithPath of
+            case ymlsWithPath of
                 [] -> []
-                xs -> last $ groupBy compfunc $ sortBy ordfunc xs
+                xs -> map last $ groupBy compfunc $ sortBy ordfunc xs
+            where
+                ordfunc  (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = compare (t1, v1) (t2, v2)
+                compfunc (_, PoseidonYml t1 _ _)  (_, PoseidonYml t2 _ _)  = t1 == t2
         getAbsJannoPath :: (FilePath, PoseidonYml) -> IO (Either String FilePath)
         getAbsJannoPath (ymlPath, ymlFile) = do
             case _posYamlJannoFile ymlFile of
