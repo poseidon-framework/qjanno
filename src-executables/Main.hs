@@ -141,42 +141,35 @@ readFilesCreateTables opts conn tableMap = do
             createTable conn name path columns body
             -- returns all columns for the --showColumns feature
             return (path, columns)
-        Right (Parser.StdIn) -> do
-            handle <- openFile "/dev/stdin" ReadMode
-            (columns, body) <- File.readFromFile opts handle
-            when (length columns == 0) $ do
-                if Option.noHeader opts
-                then hPutStrLn stderr "Warning - data is empty."
-                else hPutStrLn stderr $ "Header line is expected but missing in file " ++ path
-                exitFailure
-            when (any (elem ',') columns) $ do
-                hPutStrLn stderr "Column name cannot contain commas."
-                exitFailure
-            when (length columns >= 1) $
-                createTable conn name path columns body
-            hClose handle
-            return (path, columns)
+        Right Parser.StdIn -> do
+            makeDBFromNormalFile name "/dev/stdin"
         Right (Parser.AnyFile _) -> do
             fileExists <- doesFileExist path'
             unless fileExists $ do
                 hPutStrLn stderr $ "File does not exist: " ++ path'
                 exitFailure
-            handle <- openFile path' ReadMode
-            (columns, body) <- File.readFromFile opts handle
-            when (length columns == 0) $ do
-                if Option.noHeader opts
-                then hPutStrLn stderr "Warning - data is empty."
-                else hPutStrLn stderr $ "Header line is expected but missing in file " ++ path
-                exitFailure
-            when (any (elem ',') columns) $ do
-                hPutStrLn stderr "Column name cannot contain commas."
-                exitFailure
-            when (length columns >= 1) $
-                createTable conn name path columns body
-            hClose handle
-            return (path, columns)
-  where unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
-        unquote xs = xs
+            makeDBFromNormalFile name path'
+  where 
+    unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
+    unquote xs = xs
+    makeDBFromNormalFile :: String -> FilePath -> IO (String, [String])
+    makeDBFromNormalFile name path = do
+        handle <- openFile path ReadMode
+        (columns, body) <- File.readFromFile opts handle
+        when (length columns == 0) $ do
+            if Option.noHeader opts
+            then hPutStrLn stderr "Warning - data is empty."
+            else hPutStrLn stderr $ "Header line is expected but missing in file " ++ path
+            exitFailure
+        when (any (elem ',') columns) $ do
+            hPutStrLn stderr "Column name cannot contain commas."
+            exitFailure
+        when (length columns >= 1) $
+            createTable conn name path columns body
+        hClose handle
+        return (path, columns)
+
+
 
 createTable :: SQLite.Connection -> String -> String -> [String] -> [[String]] -> IO ()
 createTable conn name path columns bodyRaw = do
