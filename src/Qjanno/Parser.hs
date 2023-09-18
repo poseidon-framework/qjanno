@@ -28,6 +28,7 @@ import qualified Text.Parsec.String             as P
 
 data FROM =
       AnyFile FilePath
+    | StdIn
     | Jannos [JannosFROM]
 
 data JannosFROM =
@@ -42,7 +43,12 @@ readFROM s =
         Right x  -> Right x
     where
         parseFROMString :: P.Parser FROM
-        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> (AnyFile <$> P.many1 P.anyChar)
+        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> P.try parseStdIn P.<|> (AnyFile <$> P.many1 P.anyChar)
+        parseStdIn :: P.Parser FROM
+        parseStdIn = do
+            _ <- P.string "-"
+            P.eof
+            return StdIn
         parseJannos :: P.Parser [JannosFROM]
         parseJannos =
             P.sepBy1

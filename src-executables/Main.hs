@@ -141,12 +141,27 @@ readFilesCreateTables opts conn tableMap = do
             createTable conn name path columns body
             -- returns all columns for the --showColumns feature
             return (path, columns)
+        Right (Parser.StdIn) -> do
+            handle <- openFile "/dev/stdin" ReadMode
+            (columns, body) <- File.readFromFile opts handle
+            when (length columns == 0) $ do
+                if Option.noHeader opts
+                then hPutStrLn stderr "Warning - data is empty."
+                else hPutStrLn stderr $ "Header line is expected but missing in file " ++ path
+                exitFailure
+            when (any (elem ',') columns) $ do
+                hPutStrLn stderr "Column name cannot contain commas."
+                exitFailure
+            when (length columns >= 1) $
+                createTable conn name path columns body
+            hClose handle
+            return (path, columns)
         Right (Parser.AnyFile _) -> do
             fileExists <- doesFileExist path'
             unless fileExists $ do
                 hPutStrLn stderr $ "File does not exist: " ++ path'
                 exitFailure
-            handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
+            handle <- openFile path' ReadMode
             (columns, body) <- File.readFromFile opts handle
             when (length columns == 0) $ do
                 if Option.noHeader opts
