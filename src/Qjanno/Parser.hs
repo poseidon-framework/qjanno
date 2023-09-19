@@ -34,7 +34,8 @@ data FROM =
 data JannosFROM =
       ViaLatestPackages [FilePath]
     | ViaAllPackages [FilePath]
-    | DirectJannoFiles [FilePath]
+    | AllJannoFiles [FilePath]
+    | OneJannoFile FilePath
 
 readFROM :: String -> Either String FROM
 readFROM s =
@@ -51,8 +52,12 @@ readFROM s =
             return StdIn
         parseJannos :: P.Parser [JannosFROM]
         parseJannos =
-            P.sepBy1
-            (P.try parseViaLatestPackages P.<|> P.try parseViaAllPackages P.<|> P.try parseDirectJannoFiles)
+            P.sepBy1 (
+                   P.try parseViaLatestPackages
+             P.<|> P.try parseViaAllPackages
+             P.<|> P.try parseAllJannoFiles
+             P.<|> P.try parseOneJannoFile
+            )
             consumeCommaSep
         parseViaLatestPackages :: P.Parser JannosFROM
         parseViaLatestPackages = do
@@ -66,12 +71,16 @@ readFROM s =
             paths <- parseListOfPaths
             _ <- P.char ')'
             return $ ViaAllPackages paths
-        parseDirectJannoFiles :: P.Parser JannosFROM
-        parseDirectJannoFiles = do
+        parseAllJannoFiles :: P.Parser JannosFROM
+        parseAllJannoFiles = do
             _ <- P.string "j("
             paths <- parseListOfPaths
             _ <- P.char ')'
-            return $ DirectJannoFiles paths
+            return $ AllJannoFiles paths
+        parseOneJannoFile :: P.Parser JannosFROM
+        parseOneJannoFile = do
+            name <- P.manyTill P.anyChar (P.try (P.string ".janno"))
+            return $ OneJannoFile $ name ++ ".janno"
 
 parseListOfPaths :: P.Parser [FilePath]
 parseListOfPaths = P.sepBy1

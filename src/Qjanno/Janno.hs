@@ -48,8 +48,10 @@ findJannoPaths j = do
             eitherJannoPath <- mapM getAbsJannoPath $ rights eitherYmlFiles
             mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
             return $ rights eitherJannoPath
-        Parser.DirectJannoFiles ps -> do
+        Parser.AllJannoFiles ps -> do
             concat <$> mapM findAllJannoFiles ps
+        Parser.OneJannoFile p -> do
+            return [p]
     where
         findAllPOSEIDONymlFiles :: FilePath -> IO [FilePath]
         findAllPOSEIDONymlFiles = findAllFilesByPredicate (== "POSEIDON.yml")

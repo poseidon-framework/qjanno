@@ -1,0 +1,18 @@
+.-------------.------------------------------------.--------------------------.
+|   Column    |                Path                |    qjanno Table name     |
+:=============:====================================:==========================:
+| Genetic_Sex | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
+| Group_Name  | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
+| Poseidon_ID | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
+'-------------'------------------------------------'--------------------------'
+.-------------.---------.-------------------.
+|   Column    |  Path   | qjanno Table name |
+:=============:=========:===================:
+| AddCol1     | d(data) | ddata             |
+| AddCol2     | d(data) | ddata             |
+| AddCol3     | d(data) | ddata             |
+| Genetic_Sex | d(data) | ddata             |
+| Group_Name  | d(data) | ddata             |
+| Poseidon_ID | d(data) | ddata             |
+| Publication | d(data) | ddata             |
+'-------------'---------'-------------------'
