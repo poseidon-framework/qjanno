@@ -89,7 +89,7 @@ fetchQuery opts = do
     exitFailure
   query <- fromMaybe "" <$>
     case Option.query opts of
-        Just q -> return (Just q)
+        Just q  -> return (Just q)
         Nothing -> mapM readFile (Option.queryFile opts)
   when (all isSpace query) $ do
     hPutStrLn stderr "Query cannot be empty."
@@ -149,7 +149,7 @@ readFilesCreateTables opts conn tableMap = do
                 hPutStrLn stderr $ "File does not exist: " ++ path'
                 exitFailure
             makeDBFromNormalFile name path'
-  where 
+  where
     unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
     unquote xs = xs
     makeDBFromNormalFile :: String -> FilePath -> IO (String, [String])
