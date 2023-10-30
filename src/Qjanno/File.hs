@@ -7,8 +7,23 @@ import           Control.Monad       (guard, when)
 import           Data.Char           (isSpace)
 import           System.Exit         (exitFailure)
 import           System.IO
+import           Data.Version        (showVersion, Version)
 
 import qualified Qjanno.Option       as Option
+import qualified Qjanno.Janno as Janno
+
+readFromJanno :: Option.Option -> Janno.JannoWithContext -> IO ([String], [[String]])
+readFromJanno opts (Janno.JannoWithContext p Nothing) = do
+    readFromFile opts p
+readFromJanno opts (Janno.JannoWithContext p (Just (_, Janno.PoseidonYml pacTitle pacVersion _))) = do
+    (columns, body) <- readFromFile opts p
+    let columnsWithPacTitleAndVersion = "package_title" : "package_version" : columns
+    let bodyWithPacTitleAndVersion = map (\x -> pacTitle : renderPacVersion pacVersion : x) body
+    return (columnsWithPacTitleAndVersion, bodyWithPacTitleAndVersion)
+    where
+        renderPacVersion :: Maybe Version -> String
+        renderPacVersion Nothing = ""
+        renderPacVersion (Just x) = showVersion x
 
 readFromFile :: Option.Option -> FilePath -> IO ([String], [[String]])
 readFromFile opts path = do

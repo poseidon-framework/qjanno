@@ -125,18 +125,18 @@ readFilesCreateTables opts conn tableMap = do
             hPutStrLn stderr s
             exitFailure
         Right (Parser.Jannos j) -> do
-            allJannoPaths <- concat <$> mapM Janno.findJannoPaths j
-            when (null allJannoPaths) $ do
+            allJannosWithContext <- concat <$> mapM Janno.findJannos j
+            when (null allJannosWithContext) $ do
                 hPutStrLn stderr "No .janno files found."
                 exitFailure
-            forM_ allJannoPaths $ \p -> do
+            forM_ allJannosWithContext $ \(Janno.JannoWithContext p _) -> do
                 fileExists <- doesFileExist p
                 unless fileExists $ do
                     hPutStrLn stderr $ "File expected, but does not exist: " ++ p
                     exitFailure
             let jannoOpts = opts {Option.tabDelimited = True}
-            allJannos <- mapM (File.readFromFile jannoOpts) allJannoPaths
-            let (columns, body) = Janno.mergeJannos allJannos
+            allJannos <- mapM (File.readFromJanno jannoOpts) allJannosWithContext
+            let (columns, body) = Janno.reorderJannoColumns $ Janno.mergeJannos allJannos
             createTable conn name path columns body
             -- returns all columns for the --showColumns feature
             return (path, columns)

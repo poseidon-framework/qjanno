@@ -8,7 +8,7 @@ import           Control.Monad    (filterM)
 import           Data.Aeson       (FromJSON, parseJSON, withObject, (.:), (.:?))
 import           Data.Either      (lefts, rights)
 import           Data.Foldable    (foldl')
-import           Data.List        (elemIndex, groupBy, sortBy, transpose)
+import           Data.List        (groupBy, sortBy, transpose, sortOn, elemIndices)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           Data.Version     (Version)
@@ -30,28 +30,33 @@ instance FromJSON PoseidonYml where
         <*> v .:?  "packageVersion"
         <*> v .:?  "jannoFile"
 
-findJannoPaths :: Parser.JannosFROM -> IO [FilePath]
-findJannoPaths j = do
+data JannoWithContext = JannoWithContext
+    { _jannoContextJannoPath :: FilePath
+    , _jannoContextYml       :: Maybe (FilePath, PoseidonYml)
+    }
+
+findJannos :: Parser.JannosFROM -> IO [JannoWithContext]
+findJannos j = do
     case j of
         Parser.ViaLatestPackages ps -> do
             ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
             eitherYmlFiles <- mapM readYmlFile ymlPaths
             mapM_ (hPutStrLn stderr) $ lefts eitherYmlFiles
             let lastVersions = filterToLastPackageVersion $ rights eitherYmlFiles
-            eitherJannoPath <- mapM getAbsJannoPath lastVersions
-            mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
-            return $ rights eitherJannoPath
+            eitherJannoWithContext <- mapM makeJannoWithContext lastVersions
+            mapM_ (hPutStrLn stderr) $ lefts eitherJannoWithContext
+            return $ rights eitherJannoWithContext
         Parser.ViaAllPackages ps -> do
             ymlPaths <- concat <$> mapM findAllPOSEIDONymlFiles ps
             eitherYmlFiles <- mapM readYmlFile ymlPaths
             mapM_ (hPutStrLn stderr) $ lefts eitherYmlFiles
-            eitherJannoPath <- mapM getAbsJannoPath $ rights eitherYmlFiles
-            mapM_ (hPutStrLn stderr) $ lefts eitherJannoPath
-            return $ rights eitherJannoPath
+            eitherJannoWithContext <- mapM makeJannoWithContext $ rights eitherYmlFiles
+            mapM_ (hPutStrLn stderr ) $ lefts eitherJannoWithContext
+            return $ rights eitherJannoWithContext
         Parser.AllJannoFiles ps -> do
-            concat <$> mapM findAllJannoFiles ps
+            map (\x -> JannoWithContext x Nothing) . concat <$> mapM findAllJannoFiles ps
         Parser.OneJannoFile p -> do
-            return [p]
+            return [JannoWithContext p Nothing]
     where
         findAllPOSEIDONymlFiles :: FilePath -> IO [FilePath]
         findAllPOSEIDONymlFiles = findAllFilesByPredicate (== "POSEIDON.yml")
@@ -78,11 +83,11 @@ findJannoPaths j = do
             where
                 ordfunc  (_, PoseidonYml t1 v1 _) (_, PoseidonYml t2 v2 _) = compare (t1, v1) (t2, v2)
                 compfunc (_, PoseidonYml t1 _ _)  (_, PoseidonYml t2 _ _)  = t1 == t2
-        getAbsJannoPath :: (FilePath, PoseidonYml) -> IO (Either String FilePath)
-        getAbsJannoPath (ymlPath, ymlFile) = do
+        makeJannoWithContext :: (FilePath, PoseidonYml) -> IO (Either String JannoWithContext)
+        makeJannoWithContext (ymlPath, ymlFile) = do
             case _posYamlJannoFile ymlFile of
                 Nothing -> return $ Left $ ymlPath ++ ": No .janno file linked"
-                Just x  -> return $ Right $ takeDirectory ymlPath </> x
+                Just x  -> return $ Right $ JannoWithContext (takeDirectory ymlPath </> x) (Just (ymlPath, ymlFile))
 
 mergeJannos :: [([String], [[String]])] -> ([String], [[String]])
 mergeJannos xs =
@@ -93,8 +98,7 @@ mergeJannos xs =
         mapsAllKeys = map (`M.union` emptyMap) maps
         mapsFilled  = map (\(i,a) -> M.map (\b -> if null b then fillNA i else b) a) $ zip nrows mapsAllKeys
         merged      = foldl' (M.unionWith (++)) emptyMap mapsFilled
-        outputRaw   = fromMap merged
-        output      = orderSourceFileFirst outputRaw
+        output      = fromMap merged
     in output
     where
         toMap :: ([String], [[String]]) -> M.Map String [String]
@@ -103,12 +107,69 @@ mergeJannos xs =
         fillNA i = replicate i "n/a"
         fromMap :: M.Map String [String] -> ([String], [[String]])
         fromMap m = (M.keys m, transpose $ M.elems m)
-        orderSourceFileFirst :: ([String], [[String]]) -> ([String], [[String]])
-        orderSourceFileFirst m@(cols, rows) =
-            let sourceFileIndex = elemIndex "source_file" cols
-            in case sourceFileIndex of
-                Nothing -> m
-                Just i  -> (toHead i cols, map (toHead i) rows)
-        toHead :: Int -> [a] -> [a]
-        toHead n as = head ts : (hs ++ tail ts)
-            where (hs, ts) = splitAt n as
+
+reorderJannoColumns :: ([String], [[String]]) -> ([String], [[String]])
+reorderJannoColumns (oldCols, oldRowsData) =
+    let orderedCols = sortOn getOrder oldCols
+        orderingIndices = concatMap (`elemIndices` oldCols) orderedCols
+        orderedRowsData = map (\row -> map (row !!) orderingIndices) oldRowsData
+    in (orderedCols, orderedRowsData)
+    where
+        -- https://stackoverflow.com/a/26260968/3216883
+        getOrder :: String -> Int
+        getOrder k = M.findWithDefault (length jannoOrder) k ordermap
+        ordermap :: M.Map String Int
+        ordermap = M.fromList (zip jannoOrder [0..])
+
+jannoOrder :: [String]
+jannoOrder = "package_title" : "package_version" : "source_file" : jannoHeader
+
+jannoHeader :: [String]
+jannoHeader = [
+      "Poseidon_ID"
+    , "Genetic_Sex"
+    , "Group_Name"
+    , "Alternative_IDs"
+    , "Relation_To"
+    , "Relation_Degree"
+    , "Relation_Type"
+    , "Relation_Note"
+    , "Collection_ID"
+    , "Country"
+    , "Country_ISO"
+    , "Location"
+    , "Site"
+    , "Latitude"
+    , "Longitude"
+    , "Date_Type"
+    , "Date_C14_Labnr"
+    , "Date_C14_Uncal_BP"
+    , "Date_C14_Uncal_BP_Err"
+    , "Date_BC_AD_Start"
+    , "Date_BC_AD_Median"
+    , "Date_BC_AD_Stop"
+    , "Date_Note"
+    , "MT_Haplogroup"
+    , "Y_Haplogroup"
+    , "Source_Tissue"
+    , "Nr_Libraries"
+    , "Library_Names"
+    , "Capture_Type"
+    , "UDG"
+    , "Library_Built"
+    , "Genotype_Ploidy"
+    , "Data_Preparation_Pipeline_URL"
+    , "Endogenous"
+    , "Nr_SNPs"
+    , "Coverage_on_Target_SNPs"
+    , "Damage"
+    , "Contamination"
+    , "Contamination_Err"
+    , "Contamination_Meas"
+    , "Contamination_Note"
+    , "Genetic_Source_Accession_IDs"
+    , "Primary_Contact"
+    , "Publication"
+    , "Note"
+    , "Keywords"
+    ]
