@@ -25,11 +25,19 @@ readFromFileSpec =
                         outputNoHeader = False }
 
     it "should read from a test file" $ do
-      let expected = (["foo", "bar", "baz"], [["a0", "1", "a2"], ["b0", "3", "b2"], ["c0", "", "c2"]])
+      let expected = (
+            ["source_file", "foo", "bar", "baz"],
+            [["test/tests/basic/data/basic.csv", "a0", "1", "a2"],
+             ["test/tests/basic/data/basic.csv", "b0", "3", "b2"],
+             ["test/tests/basic/data/basic.csv", "c0", "", "c2"]]
+            )
       readFromFile opts "test/tests/basic/data/basic.csv" `shouldReturn` expected
 
     it "should read from a test file which contains a multiline cell" $ do
-      let expected = (["foo", "bar", "baz", "qux", "quux"], [["a0", "1", "a2\nb0\",3,\"b2\nc0", "", "c2"]])
+      let expected = (
+            ["source_file", "foo", "bar", "baz", "qux", "quux"],
+            [["test/tests/basic/data/multiline.csv", "a0", "1", "a2\nb0\",3,\"b2\nc0", "", "c2"]]
+            )
       readFromFile opts "test/tests/basic/data/multiline.csv" `shouldReturn` expected
 
 detectSplitterSpec :: Spec
