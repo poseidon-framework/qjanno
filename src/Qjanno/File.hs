@@ -5,12 +5,12 @@ module Qjanno.File where
 import           Control.Applicative ((<|>))
 import           Control.Monad       (guard, when)
 import           Data.Char           (isSpace)
+import           Data.Version        (Version, showVersion)
 import           System.Exit         (exitFailure)
 import           System.IO
-import           Data.Version        (showVersion, Version)
 
+import qualified Qjanno.Janno        as Janno
 import qualified Qjanno.Option       as Option
-import qualified Qjanno.Janno as Janno
 
 readFromJanno :: Option.Option -> Janno.JannoWithContext -> IO ([String], [[String]])
 readFromJanno opts (Janno.JannoWithContext p Nothing) = do
@@ -22,7 +22,7 @@ readFromJanno opts (Janno.JannoWithContext p (Just (_, Janno.PoseidonYml pacTitl
     return (columnsWithPacTitleAndVersion, bodyWithPacTitleAndVersion)
     where
         renderPacVersion :: Maybe Version -> String
-        renderPacVersion Nothing = ""
+        renderPacVersion Nothing  = ""
         renderPacVersion (Just x) = showVersion x
 
 readFromFile :: Option.Option -> FilePath -> IO ([String], [[String]])

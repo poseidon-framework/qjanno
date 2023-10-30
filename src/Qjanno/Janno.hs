@@ -8,7 +8,8 @@ import           Control.Monad    (filterM)
 import           Data.Aeson       (FromJSON, parseJSON, withObject, (.:), (.:?))
 import           Data.Either      (lefts, rights)
 import           Data.Foldable    (foldl')
-import           Data.List        (groupBy, sortBy, transpose, sortOn, elemIndices)
+import           Data.List        (elemIndices, groupBy, sortBy, sortOn,
+                                   transpose)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           Data.Version     (Version)
