@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Qjanno.File where
 
 import           Control.Applicative ((<|>))
@@ -8,9 +10,9 @@ import           System.IO
 
 import qualified Qjanno.Option       as Option
 
-readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
-readFromFile opts handle = do
-  contents <- joinMultiLines <$> lines <$> hGetContents handle
+readFromFile :: Option.Option -> FilePath -> IO ([String], [[String]])
+readFromFile opts path = do
+  !contents <- joinMultiLines <$> lines <$> readFile path
   let contentList = contents ++ [ "", "" ]
       headLine = contentList !! 0
       secondLine = contentList !! 1
@@ -27,7 +29,10 @@ readFromFile opts handle = do
   let skipLine = if Option.noHeader opts then id else tail
   let stripSpaces = dropWhile isSpace
   let body = filter (not . null) $ map (map stripSpaces . splitFixedSize splitter size) (skipLine contents)
-  return (columns, body)
+  -- add file path column
+  let columnsWithSourceFile = "source_file" : columns
+  let bodyWithSourceFile = map (path:) body
+  return (columnsWithSourceFile, bodyWithSourceFile)
   where joinMultiLines (cs:ds:css) | valid True cs = cs : joinMultiLines (ds:css)
                                    | otherwise = joinMultiLines $ (cs ++ "\n" ++ ds) : css
           where valid False ('"':'"':xs)  = valid False xs

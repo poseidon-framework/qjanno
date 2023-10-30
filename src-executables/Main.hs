@@ -135,8 +135,7 @@ readFilesCreateTables opts conn tableMap = do
                     hPutStrLn stderr $ "File expected, but does not exist: " ++ p
                     exitFailure
             let jannoOpts = opts {Option.tabDelimited = True}
-            allJannoHandles <- mapM (`openFile` ReadMode) allJannoPaths
-            allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
+            allJannos <- mapM (File.readFromFile jannoOpts) allJannoPaths
             let (columns, body) = Janno.mergeJannos allJannos
             createTable conn name path columns body
             -- returns all columns for the --showColumns feature
@@ -154,8 +153,7 @@ readFilesCreateTables opts conn tableMap = do
     unquote xs = xs
     makeDBFromNormalFile :: String -> FilePath -> IO (String, [String])
     makeDBFromNormalFile name path = do
-        handle <- openFile path ReadMode
-        (columns, body) <- File.readFromFile opts handle
+        (columns, body) <- File.readFromFile opts path
         when (length columns == 0) $ do
             if Option.noHeader opts
             then hPutStrLn stderr "Warning - data is empty."
@@ -166,7 +164,6 @@ readFilesCreateTables opts conn tableMap = do
             exitFailure
         when (length columns >= 1) $
             createTable conn name path columns body
-        hClose handle
         return (path, columns)
 
 
