@@ -2,9 +2,9 @@
 
 This release marks the switch to [Haskell's Package Versioning Policy](https://pvp.haskell.org/). Under the hood we also switched to a new GHC version (9.4.7) and a new Stackage resolver version (21.17). 
 
-Feature-wise in this version we changed the semantics of the `d()` pseudo-function to load `.janno` files, introduced a set of additional mechanisms to load specific `.janno` files more conveniently and finally added an automatically generated `source_file` column for the SQL tables to distinguish source files in derived queries.
+Feature-wise in this version we changed the semantics of the `d()` pseudo-function to load `.janno` files, introduced a set of additional mechanisms to load specific `.janno` files more conveniently and finally added automatically generated columns (`package_title`, `package_version` and `source_file`) for the SQL tables to distinguish source files in derived queries. We also implemented sorting of the `.janno` columns according to the suggested order in the Poseidon schema.
 
-#### New and modified pseudo-functions to crawl .janno files
+#### New and modified pseudo-functions to crawl `.janno` files
 
 In previous versions `qjanno` included a single method to specify `.janno` files for loading and merging in the `FROM` instruction of the SQL query: The `d(<path_to_directory1>,<path_to_directory2>,...)` pseudo-function. When used in a query, `qjanno` crawled all directories for files with the extension `.janno`, to read them, row-bind them and load them as a table into the SQLite database for querying. This specific functionality is now accessible with a new pseudo-function `j()`. Beyond that, various additional methods are available now for searching and selecting `.janno` files.
 
@@ -25,6 +25,20 @@ qjanno "SELECT Poseidon_ID,Country FROM d(2018_Lamnidis_Fennoscandia,2012_MeyerS
 
 This loads the `.janno` files in `2018_Lamnidis_Fennoscandia` and `2012_MeyerScience`, and the additional file `2010_RasmussenNature/2010_RasmussenNature.janno`.
 
-#### A source_file column to distinguish files
+#### Additional columns to distinguish source files
 
-From this version onwards `qjanno` prepends the relative path to the source file for a given observation to each SQL table row. This works for all files, including `.janno` files loaded directly or via `d()`, `da()` or `j()`. It allows to include the source in a query.
+From this version onwards `qjanno` prepends information about the source of a given observation in the form of three additional columns `package_title`, `package_version` and `source_file` to each SQL table row.
+
+`package_title`: The title of the source package of a given `.janno` row.
+`package_version`: The package version of the source package.
+`source_file`: The relative path to the source file.
+
+The former two can only be added for `.janno` files loaded via the `d()` and `da()` mechanisms, because only they have the necessary information about the source package of a given `.janno` file.
+
+`source_file` works for all files, including `.janno` files loaded directly or via `d()`, `da()` or `j()`.
+
+#### Sorting of the `.janno` table columns
+
+In the process of reading `.janno` files, `qjanno` now not only row-binds them, but also orders their columns according to the specification in the Poseidon schema [here](https://github.com/poseidon-framework/poseidon-schema/blob/master/janno_columns.tsv).
+
+The just introduced source columns `package_title`, `package_version` and `source_file` are kept at the beginning in this order. Additional columns not specified in the Poseidon schema are appended at the end in alphabetical order.
