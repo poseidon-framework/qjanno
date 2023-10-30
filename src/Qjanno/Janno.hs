@@ -8,7 +8,7 @@ import           Control.Monad    (filterM)
 import           Data.Aeson       (FromJSON, parseJSON, withObject, (.:), (.:?))
 import           Data.Either      (lefts, rights)
 import           Data.Foldable    (foldl')
-import           Data.List        (groupBy, sortBy, transpose)
+import           Data.List        (groupBy, sortBy, transpose, elemIndex)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           Data.Version     (Version)
@@ -93,7 +93,8 @@ mergeJannos xs =
         mapsAllKeys = map (`M.union` emptyMap) maps
         mapsFilled  = map (\(i,a) -> M.map (\b -> if null b then fillNA i else b) a) $ zip nrows mapsAllKeys
         merged      = foldl' (M.unionWith (++)) emptyMap mapsFilled
-        output      = fromMap merged
+        outputRaw   = fromMap merged
+        output      = orderSourceFileFirst outputRaw
     in output
     where
         toMap :: ([String], [[String]]) -> M.Map String [String]
@@ -102,3 +103,12 @@ mergeJannos xs =
         fillNA i = replicate i "n/a"
         fromMap :: M.Map String [String] -> ([String], [[String]])
         fromMap m = (M.keys m, transpose $ M.elems m)
+        orderSourceFileFirst :: ([String], [[String]]) -> ([String], [[String]])
+        orderSourceFileFirst m@(cols, rows) =
+            let sourceFileIndex = elemIndex "source_file" cols
+            in case sourceFileIndex of
+                Nothing -> m
+                Just i  -> (toHead i cols, map (toHead i) rows)
+        toHead :: Int -> [a] -> [a]
+        toHead n as = head ts : (hs ++ tail ts)
+            where (hs, ts) = splitAt n as

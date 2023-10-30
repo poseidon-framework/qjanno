@@ -1,14 +1,15 @@
 .-------------.------------------------------------.--------------------------.
 |   Column    |                Path                |    qjanno Table name     |
 :=============:====================================:==========================:
+| source_file | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
 | Genetic_Sex | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
 | Group_Name  | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
 | Poseidon_ID | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
-| source_file | data/Schmid_2028/Schmid_2028.janno | dataSchmid2028Schmid2028 |
 '-------------'------------------------------------'--------------------------'
 .-------------.---------.-------------------.
 |   Column    |  Path   | qjanno Table name |
 :=============:=========:===================:
+| source_file | d(data) | ddata             |
 | AddCol1     | d(data) | ddata             |
 | AddCol2     | d(data) | ddata             |
 | AddCol3     | d(data) | ddata             |
@@ -16,5 +17,4 @@
 | Group_Name  | d(data) | ddata             |
 | Poseidon_ID | d(data) | ddata             |
 | Publication | d(data) | ddata             |
-| source_file | d(data) | ddata             |
 '-------------'---------'-------------------'
