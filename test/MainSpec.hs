@@ -27,7 +27,7 @@ qjannoSpec =
 
     let poseidon_tests = [
             "janno_d", "janno_da", "janno_j", "janno_d_da_j", "janno_ext",
-            "janno_d_ext_ext", "show_columns"
+            "janno_d_ext_ext", "show_columns", "janno_d_da_j_full"
             ]
 
     runTestScripts "poseidon" poseidon_tests
