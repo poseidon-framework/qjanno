@@ -1,16 +1,33 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Qjanno.File where
 
 import           Control.Applicative ((<|>))
 import           Control.Monad       (guard, when)
 import           Data.Char           (isSpace)
+import           Data.Version        (Version, showVersion)
 import           System.Exit         (exitFailure)
 import           System.IO
 
+import qualified Qjanno.Janno        as Janno
 import qualified Qjanno.Option       as Option
 
-readFromFile :: Option.Option -> Handle -> IO ([String], [[String]])
-readFromFile opts handle = do
-  contents <- joinMultiLines <$> lines <$> hGetContents handle
+readFromJanno :: Option.Option -> Janno.JannoWithContext -> IO ([String], [[String]])
+readFromJanno opts (Janno.JannoWithContext p Nothing) = do
+    readFromFile opts p
+readFromJanno opts (Janno.JannoWithContext p (Just (_, Janno.PoseidonYml pacTitle pacVersion _))) = do
+    (columns, body) <- readFromFile opts p
+    let columnsWithPacTitleAndVersion = "package_title" : "package_version" : columns
+    let bodyWithPacTitleAndVersion = map (\x -> pacTitle : renderPacVersion pacVersion : x) body
+    return (columnsWithPacTitleAndVersion, bodyWithPacTitleAndVersion)
+    where
+        renderPacVersion :: Maybe Version -> String
+        renderPacVersion Nothing  = ""
+        renderPacVersion (Just x) = showVersion x
+
+readFromFile :: Option.Option -> FilePath -> IO ([String], [[String]])
+readFromFile opts path = do
+  !contents <- joinMultiLines <$> lines <$> readFile path
   let contentList = contents ++ [ "", "" ]
       headLine = contentList !! 0
       secondLine = contentList !! 1
@@ -27,7 +44,10 @@ readFromFile opts handle = do
   let skipLine = if Option.noHeader opts then id else tail
   let stripSpaces = dropWhile isSpace
   let body = filter (not . null) $ map (map stripSpaces . splitFixedSize splitter size) (skipLine contents)
-  return (columns, body)
+  -- add file path column
+  let columnsWithSourceFile = "source_file" : columns
+  let bodyWithSourceFile = map (path:) body
+  return (columnsWithSourceFile, bodyWithSourceFile)
   where joinMultiLines (cs:ds:css) | valid True cs = cs : joinMultiLines (ds:css)
                                    | otherwise = joinMultiLines $ (cs ++ "\n" ++ ds) : css
           where valid False ('"':'"':xs)  = valid False xs

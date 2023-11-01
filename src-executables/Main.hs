@@ -2,8 +2,7 @@ module Main where
 
 import           Control.Monad                     (forM, forM_, unless, when)
 import           Data.Char                         (isSpace)
-import           Data.List                         (intercalate, isPrefixOf,
-                                                    transpose)
+import           Data.List                         (intercalate, transpose)
 import qualified Data.Map                          as Map
 import           Data.Maybe
 import           Data.Set                          ((\\))
@@ -26,6 +25,7 @@ import qualified Qjanno.Option                     as Option
 import qualified Qjanno.Parser                     as Parser
 import qualified Qjanno.SQL                        as SQL
 import qualified Qjanno.SQLType                    as SQLType
+import           System.Directory                  (doesFileExist)
 
 main :: IO ()
 main = do
@@ -82,15 +82,15 @@ runQuery opts conn (query, tableMap) = do
               else do
                   putStrLn $ tableString colSpecs asciiRoundS (titlesH tableH) [rowsG tableB]
 
-
 fetchQuery :: Option.Option -> IO String
 fetchQuery opts = do
   when (isJust (Option.query opts) && isJust (Option.queryFile opts)) $ do
     hPutStrLn stderr "Can't provide both a query file and a query on the command line."
     exitFailure
-  query <- fromMaybe "" <$> case Option.query opts of
-                                 Just q -> return (Just q)
-                                 Nothing -> mapM readFile (Option.queryFile opts)
+  query <- fromMaybe "" <$>
+    case Option.query opts of
+        Just q  -> return (Just q)
+        Nothing -> mapM readFile (Option.queryFile opts)
   when (all isSpace query) $ do
     hPutStrLn stderr "Query cannot be empty."
     hPutStrLn stderr "See, qjanno -h for help."
@@ -119,34 +119,54 @@ readFilesCreateTables :: Option.Option -> SQLite.Connection -> Parser.TableNameM
 readFilesCreateTables opts conn tableMap = do
   forM (Map.toList tableMap) $ \(path, name) -> do
     let path' = unquote path
-    if "d(" `isPrefixOf` path'
-    then do
-      let baseDirs = Janno.extractBaseDirs path'
-      allJannoPaths <- concat <$> mapM Janno.findAllJannoFiles baseDirs
-      let jannoOpts = opts {Option.tabDelimited = True}
-      allJannoHandles <- mapM (\p -> openFile p ReadMode) allJannoPaths
-      allJannos <- mapM (File.readFromFile jannoOpts) allJannoHandles
-      let (columns, body) = Janno.mergeJannos allJannos
-      createTable conn name path columns body
-      -- returns all columns for the --showColumns feature
-      return (path, columns)
-    else do
-      handle <- openFile (if path' == "-" then "/dev/stdin" else path') ReadMode
-      (columns, body) <- File.readFromFile opts handle
-      when (length columns == 0) $ do
-        hPutStrLn stderr $ if Option.noHeader opts
-                              then "Warning - data is empty"
-                              else "Header line is expected but missing in file " ++ path
-        exitFailure
-      when (any (elem ',') columns) $ do
-        hPutStrLn stderr "Column name cannot contain commas"
-        exitFailure
-      when (length columns >= 1) $
-        createTable conn name path columns body
-      hClose handle
-      return (path, columns)
-  where unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
-        unquote xs = xs
+    case Parser.readFROM path' of
+        Left s -> do
+            hPutStrLn stderr "Invalid FROM string: "
+            hPutStrLn stderr s
+            exitFailure
+        Right (Parser.Jannos j) -> do
+            allJannosWithContext <- concat <$> mapM Janno.findJannos j
+            when (null allJannosWithContext) $ do
+                hPutStrLn stderr "No .janno files found."
+                exitFailure
+            forM_ allJannosWithContext $ \(Janno.JannoWithContext p _) -> do
+                fileExists <- doesFileExist p
+                unless fileExists $ do
+                    hPutStrLn stderr $ "File expected, but does not exist: " ++ p
+                    exitFailure
+            let jannoOpts = opts {Option.tabDelimited = True}
+            allJannos <- mapM (File.readFromJanno jannoOpts) allJannosWithContext
+            let (columns, body) = Janno.reorderJannoColumns $ Janno.mergeJannos allJannos
+            createTable conn name path columns body
+            -- returns all columns for the --showColumns feature
+            return (path, columns)
+        Right Parser.StdIn -> do
+            makeDBFromNormalFile name "/dev/stdin"
+        Right (Parser.AnyFile _) -> do
+            fileExists <- doesFileExist path'
+            unless fileExists $ do
+                hPutStrLn stderr $ "File does not exist: " ++ path'
+                exitFailure
+            makeDBFromNormalFile name path'
+  where
+    unquote (x:xs@(_:_)) | x `elem` "\"'`" && x == last xs = init xs
+    unquote xs = xs
+    makeDBFromNormalFile :: String -> FilePath -> IO (String, [String])
+    makeDBFromNormalFile name path = do
+        (columns, body) <- File.readFromFile opts path
+        when (length columns == 0) $ do
+            if Option.noHeader opts
+            then hPutStrLn stderr "Warning - data is empty."
+            else hPutStrLn stderr $ "Header line is expected but missing in file " ++ path
+            exitFailure
+        when (any (elem ',') columns) $ do
+            hPutStrLn stderr "Column name cannot contain commas."
+            exitFailure
+        when (length columns >= 1) $
+            createTable conn name path columns body
+        return (path, columns)
+
+
 
 createTable :: SQLite.Connection -> String -> String -> [String] -> [[String]] -> IO ()
 createTable conn name path columns bodyRaw = do

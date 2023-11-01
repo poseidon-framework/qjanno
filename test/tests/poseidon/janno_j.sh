@@ -1,0 +1,1 @@
+qjanno "SELECT count(*) FROM j(data)" --raw --noOutHeader

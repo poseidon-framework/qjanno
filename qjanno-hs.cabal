@@ -1,5 +1,5 @@
 name:                   qjanno-hs
-version:                1.0.1
+version:                1.0.0.0
 author:                 itchyny <https://github.com/itchyny>, Clemens Schmid
 maintainer:             Clemens Schmid <clemens@nevrome.de>
 license:                MIT
@@ -31,6 +31,9 @@ library
                       , text
                       , directory
                       , filepath
+                      , parsec
+                      , aeson
+                      , yaml
 
 executable qjanno
   hs-source-dirs:       src-executables
@@ -43,6 +46,7 @@ executable qjanno
                       , optparse-applicative
                       , sqlite-simple
                       , table-layout
+                      , directory
   other-modules:        Paths_qjanno_hs
 
 test-suite spec

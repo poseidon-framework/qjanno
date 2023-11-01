@@ -1,4 +1,14 @@
-module Qjanno.Parser (replaceTableNames, roughlyExtractTableNames, replaceBackTableNames, extractTableNames, errorString, TableNameMap) where
+module Qjanno.Parser (
+    replaceTableNames,
+    roughlyExtractTableNames,
+    replaceBackTableNames,
+    extractTableNames,
+    errorString,
+    TableNameMap,
+    readFROM,
+    FROM (..),
+    JannosFROM (..)
+) where
 
 import           Data.Char                      (isAlphaNum, isNumber, isSpace,
                                                  toUpper)
@@ -10,19 +20,101 @@ import qualified Language.SQL.SimpleSQL.Dialect as Dialect
 import qualified Language.SQL.SimpleSQL.Parse   as Parse
 import qualified Language.SQL.SimpleSQL.Syntax  as Syntax
 import           System.FilePath                (dropExtension)
+import qualified Text.Parsec                    as P
+import qualified Text.Parsec.Error              as P
+import qualified Text.Parsec.String             as P
+
+-- FROM parser
+
+data FROM =
+      AnyFile FilePath
+    | StdIn
+    | Jannos [JannosFROM]
+
+data JannosFROM =
+      ViaLatestPackages [FilePath]
+    | ViaAllPackages [FilePath]
+    | AllJannoFiles [FilePath]
+    | OneJannoFile FilePath
+
+readFROM :: String -> Either String FROM
+readFROM s =
+    case P.runParser parseFROMString () "" s of
+        Left err -> Left $ showParsecErr err
+        Right x  -> Right x
+    where
+        parseFROMString :: P.Parser FROM
+        parseFROMString = P.try (Jannos <$> parseJannos) P.<|> P.try parseStdIn P.<|> (AnyFile <$> P.many1 P.anyChar)
+        parseStdIn :: P.Parser FROM
+        parseStdIn = do
+            _ <- P.string "-"
+            P.eof
+            return StdIn
+        parseJannos :: P.Parser [JannosFROM]
+        parseJannos =
+            P.sepBy1 (
+                   P.try parseViaLatestPackages
+             P.<|> P.try parseViaAllPackages
+             P.<|> P.try parseAllJannoFiles
+             P.<|> P.try parseOneJannoFile
+            )
+            consumeCommaSep
+        parseViaLatestPackages :: P.Parser JannosFROM
+        parseViaLatestPackages = do
+            _ <- P.string "d("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ ViaLatestPackages paths
+        parseViaAllPackages :: P.Parser JannosFROM
+        parseViaAllPackages = do
+            _ <- P.string "da("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ ViaAllPackages paths
+        parseAllJannoFiles :: P.Parser JannosFROM
+        parseAllJannoFiles = do
+            _ <- P.string "j("
+            paths <- parseListOfPaths
+            _ <- P.char ')'
+            return $ AllJannoFiles paths
+        parseOneJannoFile :: P.Parser JannosFROM
+        parseOneJannoFile = do
+            name <- P.manyTill P.anyChar (P.try (P.string ".janno"))
+            return $ OneJannoFile $ name ++ ".janno"
+
+parseListOfPaths :: P.Parser [FilePath]
+parseListOfPaths = P.sepBy1
+    (P.manyTill P.anyChar (P.lookAhead (P.char ',' P.<|> P.char ')')))
+    consumeCommaSep
+
+consumeCommaSep :: P.Parser ()
+consumeCommaSep = do
+    _ <- P.spaces *> P.char ',' <* P.spaces
+    return ()
+
+showParsecErr :: P.ParseError -> String
+showParsecErr err =
+    P.showErrorMessages
+        "or" "unknown parse error"
+        "expecting" "unexpected" "end of input"
+        (P.errorMessages err)
+
+-- fix table names
 
 type TableNameMap = Map.Map String String
 
 -- | Replace all the occurrence of table names (file names, in many cases) into
 -- valid table names in SQL.
 replaceTableNames :: String -> (String, TableNameMap)
-replaceTableNames qs = (replaceQueryWithTableMap tableMap qs, tableMap)
-  where genTableName :: String -> String
+replaceTableNames qs =
+    let tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
+    in (replaceQueryWithTableMap tableMap qs, tableMap)
+    where
+        genTableName :: String -> String
         genTableName path =
           case dropWhile isNumber $ filter isAlphaNum $ dropExtension path of
             "" -> "empty_name_table"
             x  -> x
-        tableMap = Map.fromList [ (name, genTableName name) | name <- roughlyExtractTableNames qs ]
 
 -- | This function roughly extract the table names. We need this function because
 -- the given query contains the file names so the SQL parser cannot parse.

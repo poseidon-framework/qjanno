@@ -1,0 +1,3 @@
+qjanno "SELECT * FROM d(data/Schiffels_2016,data/Lamnidis_2018,data/Lamnidis_2018_newVersion) GROUP BY source_file HAVING MIN(ROWID) ORDER BY ROWID"
+qjanno "SELECT * FROM da(data/Schiffels_2016,data/Lamnidis_2018,data/Lamnidis_2018_newVersion) GROUP BY source_file HAVING MIN(ROWID) ORDER BY ROWID"
+qjanno "SELECT * FROM j(data/Schiffels_2016,data/Lamnidis_2018,data/Lamnidis_2018_newVersion) GROUP BY source_file HAVING MIN(ROWID) ORDER BY ROWID"
