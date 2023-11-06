@@ -42,7 +42,7 @@ jobs:
         --pedantic
 
     - name: Generate coverage report
-      uses: 8c6794b6/hpc-codecov-action@v2
+      uses: 8c6794b6/hpc-codecov-action@v3
       with:
         target: stack:spec
 
