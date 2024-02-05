@@ -47,4 +47,4 @@ jobs:
         target: stack:spec
 
     - name: Send coverage report
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
