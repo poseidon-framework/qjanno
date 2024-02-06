@@ -7,16 +7,17 @@ on:
     branches: [main]
 
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - uses: freckle/stack-action@v4
-      with:
-        stack-arguments: --coverage
-    # prepare and upload test coverage report
-    - uses: 8c6794b6/hpc-codecov-action@v3
-      with:
-        target: stack:spec
-    - uses: codecov/codecov-action@v4
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }} # set in organization settings
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: freckle/stack-action@v4
+        with:
+          stack-arguments: --coverage
+      # prepare and upload test coverage report
+      - uses: 8c6794b6/hpc-codecov-action@v3
+        with:
+          target: stack:spec
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # set in organization settings
