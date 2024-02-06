@@ -4,7 +4,7 @@
 
 # qjanno
 
-A command line tool to run SQL queries on .janno (and arbitrary .csv and .tsv) files. This is an adjusted version and hard fork of the qsh package (https://github.com/itchyny/qhs).
+A command line tool to run SQL queries on .janno (and arbitrary .csv and .tsv) files. This is an adjusted version and hard fork of the [qsh package](https://github.com/itchyny/qhs).
 
 **Detailed user documentation can be found on our [website](https://poseidon-framework.github.io/#/qjanno).**
 
