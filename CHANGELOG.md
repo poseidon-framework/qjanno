@@ -1,3 +1,6 @@
+- V 1.0.0.1:
+	- Switched to new stackage resolver version v21.21
+	- Update of the release pipeline according to the template developed for trident
 - V 1.0.0.0:
 	- Added more data input options for .janno files (d(), da(), j(), .janno).
 	- Reorganized golden tests and added new ones.
