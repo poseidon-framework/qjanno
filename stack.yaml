@@ -8,4 +8,4 @@ extra-deps:
   - table-layout-0.9.1.0
   - data-default-instances-base-0.1.0.1
 allow-newer: true
-resolver: lts-21.17
+resolver: lts-21.21
