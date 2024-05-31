@@ -1,3 +1,17 @@
+### V 1.0.0.1
+
+This minor release replaces the pipeline to produce static `qjanno` executables for every release.
+
+Just like `trident` and `xerxes`, `qjanno` will now be available in the following pre-compiled versions:
+
+- `qjanno-conda-linux` (for bioconda)
+- `qjanno-Linux` (build on Ubuntu 20.04 for X64 architecture)
+- `qjanno-macOS-ARM64` (build on macOS 14 for ARM64 architecture)
+- `qjanno-macOS-X64` (build on macOS 13 for X64 architecture)
+- `qjanno-Windows`
+
+`qjanno` now also depends on a new stackage resolver version LTS 21.21.
+
 ### V 1.0.0.0
 
 This release marks the switch to [Haskell's Package Versioning Policy](https://pvp.haskell.org/). Under the hood we also switched to a new GHC version (9.4.7) and a new Stackage resolver version (21.17). 
