@@ -3,7 +3,7 @@ module MainSpec (spec) where
 import           Control.Monad
 import           System.IO
 import           System.Process
-import           Test.Hspec          (Spec, describe, it, shouldReturn)
+import           Test.Hspec     (Spec, describe, it, shouldReturn)
 
 spec :: Spec
 spec = qjannoSpec
