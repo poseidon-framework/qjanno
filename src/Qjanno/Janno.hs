@@ -125,7 +125,7 @@ reorderJannoColumns (oldCols, oldRowsData) =
 jannoOrder :: [String]
 jannoOrder = "package_title" : "package_version" : "source_file" : jannoHeader
 
-jannoHeader :: [Bchs.ByteString]
+jannoHeader :: [String]
 jannoHeader = [
       "Poseidon_ID"
     , "Genetic_Sex"

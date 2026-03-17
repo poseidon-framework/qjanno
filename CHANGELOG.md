@@ -1,3 +1,6 @@
+- V 1.0.1.0: Maintenance for Poseidon v3.0.0
+	- Switched to new stackage resolver version v22.43
+	- Replaced the .janno column order list with a new one for Poseidon v3.0.0.
 - V 1.0.0.1:
 	- Switched to new stackage resolver version v21.21
 	- Update of the release pipeline according to the template developed for trident
