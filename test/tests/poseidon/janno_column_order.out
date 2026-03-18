@@ -1,0 +1,2 @@
+source_file	Poseidon_ID	Genetic_Sex	Group_Name	Species	Relation_To	Relation_Degree	Relation_Degree_Note	Relation_Type	Relation_Note	Location	Source_Material	Nr_Libraries	Nr_Libraries_Note	Primary_Contact	Source_Tissue
+data/column_order_test.janno	A	F	B	Homo Sapiens	C	identical	test rel deg note	identical twin	test rel note	Chiayi City	bone	10	test nr lib note	Bob	bone
