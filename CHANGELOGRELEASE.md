@@ -1,3 +1,11 @@
+### V 1.0.1.0
+
+This is a maintenance release to bring `qjanno` in sync with Poseidon v3.0.0.
+
+It comes with a new column order template for `.janno` files, featuring the new columns introduced with the v3.0.0 schema release, and a mechanism to automatically position arbitrary `_Note` columns in this template (as in `trident`).
+
+As usual we also switched to a new GHC version (9.6.6) and a new Stackage resolver version (22.43).
+
 ### V 1.0.0.1
 
 This minor release replaces the pipeline to produce static `qjanno` executables for every release.
