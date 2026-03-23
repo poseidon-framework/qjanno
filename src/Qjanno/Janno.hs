@@ -8,8 +8,8 @@ import           Control.Monad    (filterM)
 import           Data.Aeson       (FromJSON, parseJSON, withObject, (.:), (.:?))
 import           Data.Either      (lefts, rights)
 import           Data.Foldable    (foldl')
-import           Data.List        (elemIndices, groupBy, sortBy, sortOn,
-                                   transpose)
+import           Data.List        (elemIndices, groupBy, insertBy, sortBy,
+                                   sortOn, transpose)
 import qualified Data.Map.Strict  as M
 import qualified Data.Set         as Set
 import           Data.Version     (Version)
@@ -111,16 +111,39 @@ mergeJannos xs =
 
 reorderJannoColumns :: ([String], [[String]]) -> ([String], [[String]])
 reorderJannoColumns (oldCols, oldRowsData) =
-    let orderedCols = sortOn getOrder oldCols
-        orderingIndices = concatMap (`elemIndices` oldCols) orderedCols
+    let baseOrderedCols = sortOn getOrder oldCols
+        finalCols       = applyNoteWeaving baseOrderedCols
+        orderingIndices = concatMap (`elemIndices` oldCols) finalCols
         orderedRowsData = map (\row -> map (row !!) orderingIndices) oldRowsData
-    in (orderedCols, orderedRowsData)
+    in (finalCols, orderedRowsData)
     where
         -- https://stackoverflow.com/a/26260968/3216883
         getOrder :: String -> Int
         getOrder k = M.findWithDefault (length jannoOrder) k ordermap
         ordermap :: M.Map String Int
         ordermap = M.fromList (zip jannoOrder [0..])
+
+-- _Note column weaving as in trident's Janno.hs module
+applyNoteWeaving :: [String] -> [String]
+applyNoteWeaving cols =
+    let noteCols    = filter isNote cols
+        nonNoteCols = filter (not . isNote) cols
+    in weave noteCols nonNoteCols
+  where
+    isNote x = reverse (takeWhile (/= '_') (reverse x)) == "Note"
+    weave :: [String] -> [String] -> [String]
+    weave inserts = reverse . insertByMulti findSpot inserts . reverse
+    -- reverse, because Note columns should be at the end of column groups (e.g. Date_*)
+    insertByMulti :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
+    insertByMulti _ [] xs       = xs
+    insertByMulti f (i:rest) xs = insertBy f i (insertByMulti f rest xs)
+    findSpot :: String -> String -> Ordering
+    findSpot i x
+        | removeSuffix i == x = LT
+        | removeSuffix x == x = GT
+        | otherwise           = findSpot i (removeSuffix x)
+    removeSuffix :: String -> String
+    removeSuffix = reverse . drop 1 . dropWhile (/= '_') . reverse
 
 jannoOrder :: [String]
 jannoOrder = "package_title" : "package_version" : "source_file" : jannoHeader
@@ -130,44 +153,25 @@ jannoHeader = [
       "Poseidon_ID"
     , "Genetic_Sex"
     , "Group_Name"
-    , "Alternative_IDs"
-    , "Relation_To"
-    , "Relation_Degree"
-    , "Relation_Type"
-    , "Relation_Note"
-    , "Collection_ID"
-    , "Country"
-    , "Country_ISO"
-    , "Location"
-    , "Site"
-    , "Latitude"
-    , "Longitude"
+    , "Individual_ID"
+    , "Species"
+    , "Alternative_IDs", "Alternative_IDs_Context"
+    , "Relation_To", "Relation_Degree", "Relation_Type"
+    , "Collection_ID", "Custodian_Institution"
+    , "Cultural_Era", "Cultural_Era_URL", "Archaeological_Culture", "Archaeological_Culture_URL"
+    , "Country", "Country_ISO"
+    , "Location", "Site", "Latitude", "Longitude"
     , "Date_Type"
-    , "Date_C14_Labnr"
-    , "Date_C14_Uncal_BP"
-    , "Date_C14_Uncal_BP_Err"
-    , "Date_BC_AD_Start"
-    , "Date_BC_AD_Median"
-    , "Date_BC_AD_Stop"
-    , "Date_Note"
-    , "MT_Haplogroup"
-    , "Y_Haplogroup"
-    , "Source_Tissue"
-    , "Nr_Libraries"
-    , "Library_Names"
-    , "Capture_Type"
-    , "UDG"
-    , "Library_Built"
-    , "Genotype_Ploidy"
+    , "Date_C14_Labnr", "Date_C14_Uncal_BP", "Date_C14_Uncal_BP_Err"
+    , "Date_BC_AD_Start", "Date_BC_AD_Median", "Date_BC_AD_Stop"
+    , "Chromosomal_Anomalies"
+    , "MT_Haplogroup", "Y_Haplogroup"
+    , "Source_Material"
+    , "Nr_Libraries", "Library_Names"
+    , "Capture_Type", "UDG", "Library_Built", "Genotype_Ploidy"
     , "Data_Preparation_Pipeline_URL"
-    , "Endogenous"
-    , "Nr_SNPs"
-    , "Coverage_on_Target_SNPs"
-    , "Damage"
-    , "Contamination"
-    , "Contamination_Err"
-    , "Contamination_Meas"
-    , "Contamination_Note"
+    , "Endogenous", "Nr_SNPs", "Coverage_on_Target_SNPs", "Damage"
+    , "Contamination", "Contamination_Err", "Contamination_Meas"
     , "Genetic_Source_Accession_IDs"
     , "Primary_Contact"
     , "Publication"

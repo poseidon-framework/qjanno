@@ -1,10 +1,9 @@
 module MainSpec (spec) where
 
-import           Control.Applicative
 import           Control.Monad
 import           System.IO
 import           System.Process
-import           Test.Hspec          (Spec, describe, it, shouldReturn)
+import           Test.Hspec     (Spec, describe, it, shouldReturn)
 
 spec :: Spec
 spec = qjannoSpec
@@ -27,7 +26,8 @@ qjannoSpec =
 
     let poseidon_tests = [
             "janno_d", "janno_da", "janno_j", "janno_d_da_j", "janno_ext",
-            "janno_d_ext_ext", "show_columns", "janno_d_da_j_full"
+            "janno_d_ext_ext", "show_columns", "janno_d_da_j_full",
+            "janno_column_order"
             ]
 
     runTestScripts "poseidon" poseidon_tests
